@@ -48,11 +48,9 @@ public class HubEventMapper {
                 for (var c : e.getConditions()) {
                     var ac = new ScenarioConditionAvro();
                     ac.setSensorId(c.getSensorId());
-                    ac.setType(ConditionTypeAvro.valueOf(c.getType()));
-                    ac.setOperation(ConditionOperationAvro.valueOf(c.getOperation()));
-                    if (c.getValueBool() != null) ac.setValue(c.getValueBool());
-                    else if (c.getValueInt() != null) ac.setValue(c.getValueInt());
-                    else ac.setValue(null);
+                    ac.setType(ConditionTypeAvro.valueOf(c.getType().toUpperCase()));
+                    ac.setOperation(ConditionOperationAvro.valueOf(c.getOperation().toUpperCase()));
+                    ac.setValue(c.getValue());
                     conds.add(ac);
                 }
                 p.setConditions(conds);
@@ -61,8 +59,10 @@ public class HubEventMapper {
                 for (var a : e.getActions()) {
                     var aa = new DeviceActionAvro();
                     aa.setSensorId(a.getSensorId());
-                    aa.setType(ActionTypeAvro.valueOf(a.getType()));
-                    aa.setValue(a.getValue() != null ? a.getValue() : null);
+                    aa.setType(ActionTypeAvro.valueOf(
+                            a.getType().toUpperCase()
+                    ));
+                    aa.setValue(a.getValue());
                     acts.add(aa);
                 }
                 p.setActions(acts);
