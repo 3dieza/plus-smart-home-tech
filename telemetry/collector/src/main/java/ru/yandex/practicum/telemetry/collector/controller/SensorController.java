@@ -24,21 +24,13 @@ public class SensorController {
     }
 
     /**
-     * OpenAPI: POST /events/sensors -> 200 OK
+     * Принимает событие от сенсора и публикует его в Kafka.
      */
     @PostMapping(path = "/events/sensors", consumes = "application/json")
     public ResponseEntity<Void> collectSensorEvent(@Valid @RequestBody SensorEvent event) {
         var avro = SensorEventMapper.toAvro(event);
         var bytes = AvroBytes.toBytes(avro);
-        // SensorController
-        kafka.send(topic, event.getHubId(), bytes).whenComplete((res, ex) -> {
-            if (ex != null) {
-                System.err.println("Kafka send FAILED (sensors): " + ex.getMessage());
-            } else {
-                System.out.println("Kafka send OK (sensors): " + res.getRecordMetadata().topic()
-                        + "@" + res.getRecordMetadata().partition() + "/" + res.getRecordMetadata().offset());
-            }
-        });
+        kafka.send(topic, event.getHubId(), bytes);
         return ResponseEntity.ok().build();
     }
 }

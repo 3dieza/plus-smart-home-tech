@@ -17,27 +17,19 @@ public class HubController {
     private final KafkaTemplate<String, byte[]> kafka;
     private final String topic;
 
-    public HubController(KafkaTemplate<String, byte[]> kafka,
-                         @Value("${app.kafka.topics.hubs}") String topic) {
+    public HubController(KafkaTemplate<String, byte[]> kafka, @Value("${app.kafka.topics.hubs}") String topic) {
         this.kafka = kafka;
         this.topic = topic;
     }
 
     /**
-     * OpenAPI: POST /events/hubs -> 200 OK
+     * Принимает событие от хаба и публикует его в Kafka.
      */
     @PostMapping(path = "/events/hubs", consumes = "application/json")
     public ResponseEntity<Void> collectHubEvent(@Valid @RequestBody HubEvent event) {
         var avro = HubEventMapper.toAvro(event);
         var bytes = AvroBytes.toBytes(avro);
-        kafka.send(topic, event.getHubId(), bytes).whenComplete((res, ex) -> {
-            if (ex != null) {
-                System.err.println("Kafka send FAILED (hubs): " + ex.getMessage());
-            } else {
-                System.out.println("Kafka send OK (hubs): " + res.getRecordMetadata().topic()
-                        + "@" + res.getRecordMetadata().partition() + "/" + res.getRecordMetadata().offset());
-            }
-        });
+        kafka.send(topic, event.getHubId(), bytes);
         return ResponseEntity.ok().build();
     }
 }

@@ -6,7 +6,7 @@ import lombok.*;
 
 import java.util.List;
 
-@Getter @Setter @ToString(callSuper = true)
+@Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class ScenarioAddedEvent extends HubEvent {

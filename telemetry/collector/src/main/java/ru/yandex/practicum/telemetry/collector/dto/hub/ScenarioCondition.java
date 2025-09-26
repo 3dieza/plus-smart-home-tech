@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class ScenarioCondition {
     private String sensorId;
-    private String type;       // MOTION/LUMINOSITY/...
-    private String operation;  // EQUALS/GREATER_THAN/LOWER_THAN
+    private String type;
+    private String operation;
     private Integer value;
 }

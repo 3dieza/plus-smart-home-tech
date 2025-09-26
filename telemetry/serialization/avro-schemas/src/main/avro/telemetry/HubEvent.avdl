@@ -1,89 +1,58 @@
 @namespace("ru.yandex.practicum.kafka.telemetry.event")
 protocol HubEventProtocol {
 
-	// === Enums ===
-
 	enum DeviceTypeAvro {
-		MOTION_SENSOR,
-		TEMPERATURE_SENSOR,
-		LIGHT_SENSOR,
-		CLIMATE_SENSOR,
-		SWITCH_SENSOR
+		MOTION_SENSOR, TEMPERATURE_SENSOR, LIGHT_SENSOR, CLIMATE_SENSOR, SWITCH_SENSOR
 	}
 
 	enum ConditionTypeAvro {
-		MOTION,
-		LUMINOSITY,
-		SWITCH,
-		TEMPERATURE,
-		CO2LEVEL,
-		HUMIDITY
+		MOTION, LUMINOSITY, SWITCH, TEMPERATURE, CO2LEVEL, HUMIDITY
 	}
 
 	enum ConditionOperationAvro {
-		EQUALS,
-		GREATER_THAN,
-		LOWER_THAN
+		EQUALS, GREATER_THAN, LOWER_THAN
 	}
 
 	enum ActionTypeAvro {
-		ACTIVATE,
-		DEACTIVATE,
-		INVERSE,
-		SET_VALUE
+		ACTIVATE, DEACTIVATE, INVERSE, SET_VALUE
 	}
 
-	// === Records ===
-
 	record DeviceAddedEventAvro {
-		string id;                  // уникальный идентификатор устройства
-		DeviceTypeAvro type;        // тип устройства
+		string id;
+		DeviceTypeAvro type;
 	}
 
 	record DeviceRemovedEventAvro {
-		string id;                  // уникальный идентификатор устройства
+		string id;
 	}
 
-	/**
-	 * value: может быть null, boolean или int (по ТЗ).
-	 * В Avro это оформляется как union.
-	 */
 	record ScenarioConditionAvro {
-		string sensor_id;                   // идентификатор устройства
-		ConditionTypeAvro type;             // тип условия
-		ConditionOperationAvro operation;   // операция сравнения
-		union { null, boolean, int } value = null; // значение для сравнения (nullable)
+		string sensor_id;
+		ConditionTypeAvro type;
+		ConditionOperationAvro operation;
+		union{null, int, boolean} value = null;
 	}
 
-	/**
-	 * value: "значение, устанавливаемое при выполнении действия".
-	 * Делаем union {null,int} с default null.
-	 */
 	record DeviceActionAvro {
-		string sensor_id;            // идентификатор устройства
-		ActionTypeAvro type;         // тип действия
-		union { null, int } value = null;
+		string sensor_id;
+		ActionTypeAvro type;
+		union{null, int} value = null;
 	}
 
 	record ScenarioAddedEventAvro {
-		string name;                               // уникальное название сценария
-		array<ScenarioConditionAvro> conditions;   // условия
-		array<DeviceActionAvro>     actions;       // действия
+		string name;
+		array<ScenarioConditionAvro> conditions;
+		array<DeviceActionAvro> actions;
 	}
 
 	record ScenarioRemovedEventAvro {
-		string name;                               // уникальное в пределах хаба
+		string name;
 	}
 
-	/**
-	 * Главное событие хаба.
-	 * timestamp — long с logicalType=timestamp-millis (каноничное название).
-	 * payload — union из четырёх вариантов.
-	 */
 	record HubEventAvro {
 		string hub_id;
-		long timestamp;
-		union {
+		@logicalType("timestamp-millis") long timestamp;
+		union{
 			DeviceAddedEventAvro,
 			DeviceRemovedEventAvro,
 			ScenarioAddedEventAvro,

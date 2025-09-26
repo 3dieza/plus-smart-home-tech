@@ -1,81 +1,75 @@
 package ru.yandex.practicum.telemetry.collector.mapper;
 
-import java.util.ArrayList;
-import ru.yandex.practicum.kafka.telemetry.event.ActionTypeAvro;
-import ru.yandex.practicum.kafka.telemetry.event.ConditionOperationAvro;
-import ru.yandex.practicum.kafka.telemetry.event.ConditionTypeAvro;
-import ru.yandex.practicum.kafka.telemetry.event.DeviceActionAvro;
-import ru.yandex.practicum.kafka.telemetry.event.DeviceAddedEventAvro;
-import ru.yandex.practicum.kafka.telemetry.event.DeviceRemovedEventAvro;
-import ru.yandex.practicum.kafka.telemetry.event.DeviceTypeAvro;
-import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
-import ru.yandex.practicum.kafka.telemetry.event.ScenarioAddedEventAvro;
-import ru.yandex.practicum.kafka.telemetry.event.ScenarioConditionAvro;
-import ru.yandex.practicum.kafka.telemetry.event.ScenarioRemovedEventAvro;
-import ru.yandex.practicum.telemetry.collector.dto.hub.DeviceAddedEvent;
-import ru.yandex.practicum.telemetry.collector.dto.hub.DeviceRemovedEvent;
-import ru.yandex.practicum.telemetry.collector.dto.hub.HubEvent;
-import ru.yandex.practicum.telemetry.collector.dto.hub.ScenarioAddedEvent;
-import ru.yandex.practicum.telemetry.collector.dto.hub.ScenarioRemovedEvent;
+import ru.yandex.practicum.kafka.telemetry.event.*;
+import ru.yandex.practicum.telemetry.collector.dto.hub.*;
 
-public class HubEventMapper {
+import java.util.List;
+import java.util.Objects;
+
+public final class HubEventMapper {
+
+    private HubEventMapper() {}
 
     public static HubEventAvro toAvro(HubEvent dto) {
+        Objects.requireNonNull(dto, "dto is null");
+
         var av = new HubEventAvro();
         av.setHubId(dto.getHubId());
-        av.setTimestamp(dto.getTimestamp().toEpochMilli());
+        av.setTimestamp(dto.getTimestamp());
 
         switch (dto.getType()) {
-            case DEVICE_ADDED -> {
-                var e = (DeviceAddedEvent) dto;
-                var p = new DeviceAddedEventAvro();
-                p.setId(e.getId());
-                p.setType(DeviceTypeAvro.valueOf(e.getDeviceType().name()));
-                av.setPayload(p);
-            }
-            case DEVICE_REMOVED -> {
-                var e = (DeviceRemovedEvent) dto;
-                var p = new DeviceRemovedEventAvro();
-                p.setId(e.getId());
-                av.setPayload(p);
-            }
-            case SCENARIO_ADDED -> {
-                var e = (ScenarioAddedEvent) dto;
-                var p = new ScenarioAddedEventAvro();
-                p.setName(e.getName());
-
-                var conds = new ArrayList<ScenarioConditionAvro>();
-                for (var c : e.getConditions()) {
-                    var ac = new ScenarioConditionAvro();
-                    ac.setSensorId(c.getSensorId());
-                    ac.setType(ConditionTypeAvro.valueOf(c.getType().toUpperCase()));
-                    ac.setOperation(ConditionOperationAvro.valueOf(c.getOperation().toUpperCase()));
-                    ac.setValue(c.getValue());
-                    conds.add(ac);
-                }
-                p.setConditions(conds);
-
-                var acts = new ArrayList<DeviceActionAvro>();
-                for (var a : e.getActions()) {
-                    var aa = new DeviceActionAvro();
-                    aa.setSensorId(a.getSensorId());
-                    aa.setType(ActionTypeAvro.valueOf(
-                            a.getType().toUpperCase()
-                    ));
-                    aa.setValue(a.getValue());
-                    acts.add(aa);
-                }
-                p.setActions(acts);
-
-                av.setPayload(p);
-            }
-            case SCENARIO_REMOVED -> {
-                var e = (ScenarioRemovedEvent) dto;
-                var p = new ScenarioRemovedEventAvro();
-                p.setName(e.getName());
-                av.setPayload(p);
-            }
+            case DEVICE_ADDED   -> av.setPayload(deviceAdded((DeviceAddedEvent) dto));
+            case DEVICE_REMOVED -> av.setPayload(deviceRemoved((DeviceRemovedEvent) dto));
+            case SCENARIO_ADDED -> av.setPayload(scenarioAdded((ScenarioAddedEvent) dto));
+            case SCENARIO_REMOVED -> av.setPayload(scenarioRemoved((ScenarioRemovedEvent) dto));
+            default -> throw new IllegalArgumentException("Unsupported event type: " + dto.getType());
         }
         return av;
+    }
+
+    private static DeviceAddedEventAvro deviceAdded(DeviceAddedEvent e) {
+        var p = new DeviceAddedEventAvro();
+        p.setId(e.getId());
+        p.setType(DeviceTypeAvro.valueOf(e.getDeviceType().name()));
+        return p;
+    }
+
+    private static DeviceRemovedEventAvro deviceRemoved(DeviceRemovedEvent e) {
+        var p = new DeviceRemovedEventAvro();
+        p.setId(e.getId());
+        return p;
+    }
+
+    private static ScenarioAddedEventAvro scenarioAdded(ScenarioAddedEvent e) {
+        var p = new ScenarioAddedEventAvro();
+        p.setName(e.getName());
+        p.setConditions(e.getConditions() == null ? List.of()
+                : e.getConditions().stream().map(HubEventMapper::condition).toList());
+        p.setActions(e.getActions() == null ? List.of()
+                : e.getActions().stream().map(HubEventMapper::action).toList());
+        return p;
+    }
+
+    private static ScenarioConditionAvro condition(ScenarioCondition src) {
+        var c = new ScenarioConditionAvro();
+        c.setSensorId(src.getSensorId());
+        c.setType(ConditionTypeAvro.valueOf(src.getType()));
+        c.setOperation(ConditionOperationAvro.valueOf(src.getOperation()));
+        c.setValue(src.getValue());
+        return c;
+    }
+
+    private static DeviceActionAvro action(DeviceAction src) {
+        var a = new DeviceActionAvro();
+        a.setSensorId(src.getSensorId());
+        a.setType(ActionTypeAvro.valueOf(src.getType()));
+        a.setValue(src.getValue());
+        return a;
+    }
+
+    private static ScenarioRemovedEventAvro scenarioRemoved(ScenarioRemovedEvent e) {
+        var p = new ScenarioRemovedEventAvro();
+        p.setName(e.getName());
+        return p;
     }
 }
