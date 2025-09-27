@@ -1,6 +1,8 @@
 package ru.yandex.practicum.telemetry.collector.controller;
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -14,6 +16,7 @@ import ru.yandex.practicum.telemetry.collector.mapper.SensorEventMapper;
 
 @RestController
 @Validated
+@Slf4j
 public class SensorController {
 
     private final KafkaTemplate<String, byte[]> kafka;
@@ -28,13 +31,38 @@ public class SensorController {
     }
 
     /**
-     * Принимает событие от сенсора и публикует его в Kafka.
+     * Принимает событие от сенсора в формате JSON, преобразует его в Avro и публикует в Kafka.
+     * В контроллере логируется бизнес-контекст (id, hubId, тип, timestamp), чтобы фиксировать
+     * факт приёма события и ключевые атрибуты.
+     * Технические детали доставки (partition, offset, ошибки продюсера) логируются через ProducerListener.
      */
     @PostMapping(path = "/events/sensors", consumes = "application/json")
     public ResponseEntity<Void> collectSensorEvent(@Valid @RequestBody SensorEvent event) {
+        log.info("SENSOR EVENT received: id={}, hubId={}, type={}, ts={}",
+                event.getId(), event.getHubId(), event.getType(), event.getTimestamp());
+
         var avro = SensorEventMapper.toAvro(event);
         var bytes = AvroBytes.toBytes(avro);
-        kafka.send(topic, event.getHubId(), bytes);
+
+        var record = new ProducerRecord<>(
+                topic,
+                null,
+                event.getTimestamp().toEpochMilli(),
+                event.getHubId(),
+                bytes
+        );
+
+        kafka.send(record).whenComplete((result, ex) -> {
+            if (ex != null) {
+                log.error("SENSOR EVENT publish failed: id={}, hubId={}, topic={}, reason={}",
+                        event.getId(), event.getHubId(), topic, ex, ex);
+            } else {
+                var md = result.getRecordMetadata();
+                log.info("SENSOR EVENT published: id={}, hubId={}, topic={}, partition={}, offset={}, ts={}",
+                        event.getId(), event.getHubId(), md.topic(), md.partition(), md.offset(), record.timestamp());
+            }
+        });
+
         return ResponseEntity.ok().build();
     }
 }
