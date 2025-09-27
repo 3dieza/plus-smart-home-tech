@@ -9,24 +9,34 @@ import lombok.ToString;
 
 import java.time.Instant;
 
+@Getter
+@Setter
+@ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(
-        use      = JsonTypeInfo.Id.NAME,
-        include  = JsonTypeInfo.As.EXISTING_PROPERTY,
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.EXISTING_PROPERTY,
         property = "type",
-        visible  = true
+        visible = true
 )
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = LightSensorEvent.class,       name = "LIGHT_SENSOR_EVENT"),
+        @JsonSubTypes.Type(value = LightSensorEvent.class, name = "LIGHT_SENSOR_EVENT"),
         @JsonSubTypes.Type(value = TemperatureSensorEvent.class, name = "TEMPERATURE_SENSOR_EVENT"),
-        @JsonSubTypes.Type(value = SwitchSensorEvent.class,      name = "SWITCH_SENSOR_EVENT"),
-        @JsonSubTypes.Type(value = ClimateSensorEvent.class,     name = "CLIMATE_SENSOR_EVENT"),
-        @JsonSubTypes.Type(value = MotionSensorEvent.class,      name = "MOTION_SENSOR_EVENT")
+        @JsonSubTypes.Type(value = SwitchSensorEvent.class, name = "SWITCH_SENSOR_EVENT"),
+        @JsonSubTypes.Type(value = ClimateSensorEvent.class, name = "CLIMATE_SENSOR_EVENT"),
+        @JsonSubTypes.Type(value = MotionSensorEvent.class, name = "MOTION_SENSOR_EVENT")
 })
-@Getter @Setter @ToString
 public abstract class SensorEvent {
-    @NotBlank private String id;
-    @NotBlank private String hubId;
-    @NotNull  private Instant timestamp;
-    @NotNull  private SensorEventType type;
+
+    @NotBlank
+    private String id;
+
+    @NotBlank
+    private String hubId;
+
+    @NotNull
+    private Instant timestamp;
+
+    @NotNull
+    private SensorEventType type;
 }

@@ -7,5 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class DeviceRemovedEvent extends HubEvent {
-    @NotBlank private String id;
+
+    @NotBlank
+    private String id;
 }

@@ -18,7 +18,7 @@ public final class HubEventMapper {
         av.setTimestamp(dto.getTimestamp());
 
         switch (dto.getType()) {
-            case DEVICE_ADDED   -> av.setPayload(deviceAdded((DeviceAddedEvent) dto));
+            case DEVICE_ADDED -> av.setPayload(deviceAdded((DeviceAddedEvent) dto));
             case DEVICE_REMOVED -> av.setPayload(deviceRemoved((DeviceRemovedEvent) dto));
             case SCENARIO_ADDED -> av.setPayload(scenarioAdded((ScenarioAddedEvent) dto));
             case SCENARIO_REMOVED -> av.setPayload(scenarioRemoved((ScenarioRemovedEvent) dto));

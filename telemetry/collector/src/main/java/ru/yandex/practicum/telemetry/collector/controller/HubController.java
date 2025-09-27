@@ -17,7 +17,10 @@ public class HubController {
     private final KafkaTemplate<String, byte[]> kafka;
     private final String topic;
 
-    public HubController(KafkaTemplate<String, byte[]> kafka, @Value("${app.kafka.topics.hubs}") String topic) {
+    public HubController(
+            KafkaTemplate<String, byte[]> kafka,
+            @Value("${app.kafka.topics.hubs}") String topic
+    ) {
         this.kafka = kafka;
         this.topic = topic;
     }

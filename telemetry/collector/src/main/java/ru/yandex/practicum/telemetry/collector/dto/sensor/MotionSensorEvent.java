@@ -6,9 +6,10 @@ import lombok.*;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class MotionSensorEvent extends SensorEvent {
-    private int  linkQuality;
+
+    private int linkQuality;
 
     private boolean motion;
 
-    private int  voltage;
+    private int voltage;
 }

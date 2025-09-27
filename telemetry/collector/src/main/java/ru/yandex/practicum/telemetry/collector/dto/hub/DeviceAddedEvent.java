@@ -8,6 +8,10 @@ import lombok.*;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class DeviceAddedEvent extends HubEvent {
-    @NotBlank private String id;
-    @NotNull  private DeviceType deviceType;
+
+    @NotBlank
+    private String id;
+
+    @NotNull
+    private DeviceType deviceType;
 }

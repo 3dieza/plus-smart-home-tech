@@ -7,5 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class ScenarioRemovedEvent extends HubEvent {
-    @NotBlank private String name;
+
+    @NotBlank
+    private String name;
 }

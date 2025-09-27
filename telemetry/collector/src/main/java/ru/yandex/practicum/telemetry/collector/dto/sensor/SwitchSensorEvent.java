@@ -6,5 +6,6 @@ import lombok.*;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class SwitchSensorEvent extends SensorEvent {
+
     private boolean state;
 }
