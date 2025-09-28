@@ -1,0 +1,115 @@
+syntax = "proto3";
+
+package telemetry.service.collector;
+
+import "google/protobuf/timestamp.proto";
+
+option java_multiple_files = true;
+option java_package = "ru.yandex.practicum.grpc.telemetry.collector";
+
+
+message CollectorResponse {
+  enum Status {
+    OK = 0;
+    ERROR = 1;
+    PARTIAL = 2; // на вырост: если когда-нибудь будет батч
+  }
+
+  Status status = 1;                             // бизнес-статус обработки
+  string message = 2;                            // пояснение (необязательно)
+  google.protobuf.Timestamp processed_at = 3;    // когда обработали на сервере
+}
+
+// Типы устройств (для событий хаба)
+enum DeviceTypeProto {
+  MOTION_SENSOR      = 0;
+  TEMPERATURE_SENSOR = 1;
+  LIGHT_SENSOR       = 2;
+  CLIMATE_SENSOR     = 3;
+  SWITCH_SENSOR      = 4;
+}
+
+/* --------- События ХАБА --------- */
+
+message DeviceAddedEventProto {
+  string id = 1;            // id устройства
+  DeviceTypeProto type = 2; // тип устройства
+}
+
+message DeviceRemovedEventProto {
+  string id = 1;            // id устройства
+}
+
+message ScenarioAddedEventProto {
+  string id = 1;            // id сценария
+}
+
+message ScenarioRemovedEventProto {
+  string id = 1;            // id сценария
+}
+
+message HubEventProto {
+  string hub_id = 1;                        // id хаба
+  google.protobuf.Timestamp timestamp = 2;  // время события
+
+  oneof payload {                           // конкретное событие
+    DeviceAddedEventProto    device_added    = 3;
+    DeviceRemovedEventProto  device_removed  = 4;
+    ScenarioAddedEventProto  scenario_added  = 5;
+    ScenarioRemovedEventProto scenario_removed = 6;
+  }
+}
+
+/* --------- События СЕНСОРОВ --------- */
+
+message SensorEventProto {
+  string id = 1;                           // id сенсора/события
+  google.protobuf.Timestamp timestamp = 2; // время события
+  string hubId = 3;                        // id связанного хаба (требование задания)
+
+  oneof payload {                          // данные конкретного сенсора
+    MotionSensorProto       motion_sensor_event       = 4;
+    TemperatureSensorProto  temperature_sensor_event  = 5;
+    LightSensorProto        light_sensor_event        = 6;
+    ClimateSensorProto      climate_sensor_event      = 7;
+    SwitchSensorProto       switch_sensor_event       = 8;
+  }
+}
+
+// Датчик движения
+message MotionSensorProto {
+  uint32 link_quality = 1; // 0..N
+  bool   motion       = 2; // true — движение есть
+  uint32 voltage      = 3; // мВ/В (неотриц.)
+}
+
+// Температурный датчик
+message TemperatureSensorProto {
+  int32  temperature_c = 1; // может быть отрицательной
+  int32  temperature_f = 2;
+}
+
+// Датчик освещённости
+message LightSensorProto {
+  uint32 link_quality = 1;
+  uint32 luminosity   = 2;  // люксы
+}
+
+// Климатический датчик
+message ClimateSensorProto {
+  int32  temperature_c = 1;
+  uint32 humidity      = 2; // %
+  uint32 co2_level     = 3; // ppm
+}
+
+// Переключатель
+message SwitchSensorProto {
+  bool state = 1; // true — включен
+}
+
+/* --------- gRPC-сервис --------- */
+
+service CollectorController {
+  rpc CollectSensorEvent (SensorEventProto) returns (CollectorResponse);
+  rpc CollectHubEvent    (HubEventProto)    returns (CollectorResponse);
+}
