@@ -1,6 +1,9 @@
 spring:
   application:
     name: aggregator
+  kafka:
+    consumer:
+      auto-offset-reset: earliest
 
 aggregator:
   kafka:
