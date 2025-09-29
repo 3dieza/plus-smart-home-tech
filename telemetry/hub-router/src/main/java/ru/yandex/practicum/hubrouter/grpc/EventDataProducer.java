@@ -1,4 +1,4 @@
-package ru.practicum.hubrouter.grpc;
+package ru.yandex.practicum.hubrouter.grpc;
 
 import com.google.protobuf.Timestamp;
 import io.grpc.StatusRuntimeException;
@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import ru.practicum.hubrouter.config.SensorProps;
+import ru.yandex.practicum.hubrouter.config.SensorProps;
 import ru.yandex.practicum.grpc.telemetry.collector.ClimateSensorProto;
 import ru.yandex.practicum.grpc.telemetry.collector.CollectorControllerGrpc;
 import ru.yandex.practicum.grpc.telemetry.collector.CollectorResponse;

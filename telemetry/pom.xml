@@ -16,6 +16,7 @@
         <module>serialization</module>
         <module>collector</module>
         <module>hub-router</module>
+        <module>aggregator</module>
     </modules>
 
 </project>

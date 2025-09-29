@@ -1,4 +1,4 @@
-package ru.practicum.hubrouter.config;
+package ru.yandex.practicum.hubrouter.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
