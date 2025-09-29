@@ -2,7 +2,7 @@ services:
   kafka:
     image: confluentinc/confluent-local:7.4.3
     hostname: kafka
-    container_name: kafka
+    container_name: kafka-smart-home
     ports:
       - "9092:9092" # for client connections
       - "9101:9101" # JMX
