@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: aggregator
+
+aggregator:
+  kafka:
+    bootstrapServers: "localhost:9092"
+    consumerGroupId: "smart-home.aggregator"
+    inTopic: "telemetry.sensors.v1"
+    outTopic: "telemetry.snapshots.v1"
+
+    maxPollRecords: 100
+    maxPollIntervalMs: 420000
+    fetchMaxBytes: 3072000
+    maxPartitionFetchBytes: 307200
+    pollTimeoutMs: 1000
+
+logging:
+  level:
+    root: INFO
+    ru.yandex.practicum: INFO
