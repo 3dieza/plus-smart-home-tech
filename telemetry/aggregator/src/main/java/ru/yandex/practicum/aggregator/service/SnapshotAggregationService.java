@@ -24,7 +24,7 @@ public class SnapshotAggregationService {
      */
     public Optional<SensorsSnapshotAvro> updateState(SensorEventAvro event) {
         final String hubId = event.getHubId();
-        final String sensorId = event.getId(); // sensor id из события
+        final String sensorId = event.getId();
         final Instant eventTs = event.getTimestamp();
 
         SensorsSnapshotAvro snapshot = snapshots.computeIfAbsent(hubId, k -> {
@@ -38,26 +38,25 @@ public class SnapshotAggregationService {
         Map<String, SensorStateAvro> stateMap = snapshot.getSensorsState();
         SensorStateAvro oldState = stateMap.get(sensorId);
 
-        // Если есть прошлое состояние — проверяем таймштамп и payload
         if (oldState != null) {
             Instant oldTs = oldState.getTimestamp();
-            // если старое время >= нового (т.е. событие не новее) — игнорим
-            if (!oldTs.isBefore(eventTs)) {
+
+            // ❗️Игнорим только если новое событие старее существующего
+            if (oldTs.isAfter(eventTs)) {
                 return Optional.empty();
             }
-            // Если payload одинаковый — ничего не меняем
+            // Если payload не изменился — тоже не публикуем
             if (equalPayload(oldState, event)) {
                 return Optional.empty();
             }
         }
 
-        // Новые данные: собираем SensorStateAvro из события
         SensorStateAvro newState = new SensorStateAvro();
         newState.setTimestamp(eventTs);
-        newState.setData(event.getPayload()); // union совместим
+        newState.setData(event.getPayload());
 
         stateMap.put(sensorId, newState);
-        snapshot.setTimestamp(eventTs); // «текущий» ts снапшота = ts последнего обновления
+        snapshot.setTimestamp(eventTs);
         return Optional.of(snapshot);
     }
 
