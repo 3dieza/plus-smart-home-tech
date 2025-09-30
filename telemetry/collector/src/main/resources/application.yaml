@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: collector
+grpc:
+  server:
+    port: 59091
+
+app:
+  kafka:
+    bootstrap-servers: localhost:9092
+    topics:
+      sensors: telemetry.sensors.v1
+      hubs: telemetry.hubs.v1
+
+logging:
+  level:
+    root: INFO
+    org.springframework.kafka.core: DEBUG
+    org.apache.kafka.clients.producer.KafkaProducer: INFO
