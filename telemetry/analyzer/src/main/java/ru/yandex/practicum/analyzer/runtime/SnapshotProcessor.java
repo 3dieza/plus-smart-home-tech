@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.analyzer.engine.ScenarioEngine;
-import ru.yandex.practicum.analyzer.repository.ScenarioRepository;
+import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 
 @Slf4j
 @Component
@@ -17,9 +17,10 @@ import ru.yandex.practicum.analyzer.repository.ScenarioRepository;
 public class SnapshotProcessor {
 
     @Qualifier("snapshotsConsumer")
-    private final KafkaConsumer<String, ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro> consumer;
-    private final ScenarioRepository scenarioRepo;
+    private final KafkaConsumer<String, SensorsSnapshotAvro> consumer;
+    private final ScenarioLoader scenarioLoader;
     private final ScenarioEngine engine;
+
     @Value("${kafka.topics.snapshots}")
     private String topic;
 
@@ -30,7 +31,7 @@ public class SnapshotProcessor {
             for (var r : recs) {
                 var snap = r.value();
                 var hubId = snap.getHubId();
-                var scenarios = scenarioRepo.findWithDetailsByHubId(hubId);
+                var scenarios = scenarioLoader.loadForHub(hubId);
                 if (!scenarios.isEmpty()) {
                     engine.evaluateAndExecute(snap, scenarios);
                 }

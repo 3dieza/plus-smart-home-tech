@@ -1,5 +1,6 @@
 package ru.yandex.practicum.analyzer.grpc;
 
+import com.google.protobuf.Timestamp;
 import io.grpc.StatusRuntimeException;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
@@ -39,9 +40,9 @@ public class HubRouterClient {
         }
     }
 
-    private static com.google.protobuf.Timestamp nowTs() {
+    private static Timestamp nowTs() {
         var i = java.time.Instant.now();
-        return com.google.protobuf.Timestamp.newBuilder()
+        return Timestamp.newBuilder()
                 .setSeconds(i.getEpochSecond()).setNanos(i.getNano()).build();
     }
 }

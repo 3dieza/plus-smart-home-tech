@@ -3,6 +3,7 @@ package ru.yandex.practicum.analyzer.engine;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.analyzer.grpc.HubRouterClient;
 import ru.yandex.practicum.analyzer.model.ConditionEntity;
@@ -16,6 +17,7 @@ import ru.yandex.practicum.kafka.telemetry.event.SwitchSensorAvro;
 import ru.yandex.practicum.kafka.telemetry.event.TemperatureSensorAvro;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ScenarioEngine {
     private final HubRouterClient hubRouter;
@@ -32,6 +34,8 @@ public class ScenarioEngine {
             boolean ok = sc.getConditions().stream().allMatch(c -> testCondition(c, states));
             if (ok) {
                 for (var a : sc.getActions()) {
+                    log.info("Action -> hubId={}, scenario={}, deviceId={}, type={}, value={}",
+                            hubId, sc.getName(), a.getSensorId(), a.getType(), a.getValue());
                     hubRouter.sendAction(hubId, sc.getName(), a.getSensorId(), a.getType(), a.getValue());
                 }
             }
