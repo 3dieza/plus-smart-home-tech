@@ -53,8 +53,8 @@ public class ScenarioEngine {
         if (st == null || st.getData() == null) return false;
 
         Object payload = st.getData();
-        ConditionType type = c.getType();
-        Operation op = c.getOperation();
+        ConditionType type = c.getType();     // enum
+        Operation op      = c.getOperation(); // enum
 
         switch (type) {
             case MOTION -> {
@@ -102,22 +102,22 @@ public class ScenarioEngine {
         }
     }
 
-    // В DDL только INTEGER value: для булевых — 0/1.
-    private Boolean boolValue(ConditionEntity c) {
-        Integer v = c.getValue();
-        if (v == null) return null;
-        return v != 0;
-    }
-
     private boolean opBoolean(Operation op, boolean actual, boolean expected) {
         return op == Operation.EQUALS && actual == expected;
     }
 
     private boolean opInt(Operation op, int actual, int expected) {
         return switch (op) {
-            case EQUALS -> actual == expected;
+            case EQUALS       -> actual == expected;
             case GREATER_THAN -> actual > expected;
-            case LOWER_THAN -> actual < expected;
+            case LOWER_THAN   -> actual < expected;
         };
+    }
+
+    // В DDL только INTEGER value: для булевых — 0/1.
+    private Boolean boolValue(ConditionEntity c) {
+        Integer v = c.getValue();
+        if (v == null) return null;
+        return v != 0;
     }
 }

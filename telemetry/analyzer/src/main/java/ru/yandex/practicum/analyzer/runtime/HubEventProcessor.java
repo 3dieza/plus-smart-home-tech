@@ -81,8 +81,8 @@ public class HubEventProcessor implements Runnable {
             // --- conditions ---
             for (var c : sa.getConditions()) {
                 var ce = new ConditionEntity();
-                ce.setType(ConditionType.valueOf(c.getType().name()));        // <— enum, не String
-                ce.setOperation(Operation.valueOf(c.getOperation().name()));  // <— enum, не String
+                ce.setType(ConditionType.valueOf(c.getType().name()));       // enum → enum
+                ce.setOperation(Operation.valueOf(c.getOperation().name())); // enum → enum
                 Object v = c.getValue();
                 if (v instanceof Integer i) ce.setValue(i);
                 else if (v instanceof Boolean b) ce.setValue(b ? 1 : 0);
@@ -106,7 +106,7 @@ public class HubEventProcessor implements Runnable {
 // --- actions ---
             for (var a : sa.getActions()) {
                 var ae = new ActionEntity();
-                ae.setType(ActionType.valueOf(a.getType().name()));          // <— enum, не String
+                ae.setType(ActionType.valueOf(a.getType().name())); // enum → enum
                 if (a.getValue() instanceof Integer i) ae.setValue(i);
                 ae = actionRepo.save(ae);
 
@@ -124,7 +124,6 @@ public class HubEventProcessor implements Runnable {
                 link.setAction(ae);
                 sc.getActionLinks().add(link);
             }
-
             scenarioRepo.save(sc);
         } else if (payload instanceof ScenarioRemovedEventAvro sr) {
             scenarioRepo.findByHubIdAndName(hubId, sr.getName()).ifPresent(scenarioRepo::delete);
