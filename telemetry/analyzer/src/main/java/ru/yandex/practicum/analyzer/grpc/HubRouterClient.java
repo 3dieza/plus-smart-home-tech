@@ -17,24 +17,10 @@ public class HubRouterClient {
     private HubRouterControllerGrpc.HubRouterControllerBlockingStub stub;
 
     public void sendAction(String hubId, String scenarioName, String deviceId, String actionType, Integer value) {
-        String type = normalizeType(actionType);
-
         Message.DeviceActionProto.Builder action = Message.DeviceActionProto.newBuilder()
                 .setDeviceId(deviceId)
-                .setType(type);
-
-        // ВАЖНО: всегда задаём value, чтобы хаб не подставил включение по умолчанию
-        switch (type) {
-            case "SET_LEVEL" -> {
-                if (value == null) {
-                    throw new IllegalArgumentException("SET_LEVEL requires non-null value");
-                }
-                action.setValue(value);
-            }
-            case "DEACTIVATE" -> action.setValue(0);
-            case "ACTIVATE" -> action.setValue(1);
-            default -> throw new IllegalArgumentException("Unknown action type: " + type);
-        }
+                .setType(actionType);
+        if (value != null) action.setValue(value);
 
         Message.DeviceActionRequest req = Message.DeviceActionRequest.newBuilder()
                 .setHubId(hubId)
@@ -43,37 +29,14 @@ public class HubRouterClient {
                 .setTimestamp(nowTs())
                 .build();
 
-        sendActionWithRetry(req);
+        sendAction(req);
     }
 
-    private static String normalizeType(String type) {
-        return type == null ? "" : type.trim().toUpperCase();
-    }
-
-    private void sendActionWithRetry(Message.DeviceActionRequest req) {
-        int attempts = 0;
-        long backoffMs = 200;
-        while (true) {
-            try {
-                stub.withDeadlineAfter(2, TimeUnit.SECONDS).handleDeviceAction(req);
-                return;
-            } catch (StatusRuntimeException e) {
-                attempts++;
-                // Мягко ждём, пока поднимется hub-router из тестового раннера
-                if (e.getStatus().getCode() == io.grpc.Status.Code.UNAVAILABLE && attempts < 8) {
-                    log.warn("HubRouter недоступен ({}). Ретрай #{}...", e.getStatus(), attempts);
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(backoffMs);
-                    } catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                        return;
-                    }
-                    backoffMs = Math.min(backoffMs * 2, 2000);
-                    continue;
-                }
-                log.warn("Ошибка при отправке команды в HubRouter: {}", e.getStatus(), e);
-                return;
-            }
+    public void sendAction(Message.DeviceActionRequest req) {
+        try {
+            stub.withDeadlineAfter(2, TimeUnit.SECONDS).handleDeviceAction(req);
+        } catch (StatusRuntimeException e) {
+            log.warn("HubRouter недоступен: {}", e.getStatus(), e);
         }
     }
 
