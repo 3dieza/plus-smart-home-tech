@@ -1,10 +1,9 @@
 package ru.yandex.practicum.hubrouter.config;
 
+import java.util.List;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Data
 @Component
@@ -14,10 +13,10 @@ public class SensorProps {
     private String hubId;
 
     private List<Motion> motionSensors;
-    private List<Temp>   temperatureSensors;
-    private List<Light>  lightSensors;
+    private List<Temp> temperatureSensors;
+    private List<Light> lightSensors;
     private List<Climate> climateSensors;
-    private List<Sw>     switchSensors;
+    private List<Sw> switchSensors;
 
     @Data
     public static class Range {

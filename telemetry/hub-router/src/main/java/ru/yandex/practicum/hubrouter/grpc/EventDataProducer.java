@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.hubrouter.config.SensorProps;
 import ru.yandex.practicum.grpc.telemetry.collector.ClimateSensorProto;
 import ru.yandex.practicum.grpc.telemetry.collector.CollectorControllerGrpc;
 import ru.yandex.practicum.grpc.telemetry.collector.CollectorResponse;
@@ -18,6 +17,7 @@ import ru.yandex.practicum.grpc.telemetry.collector.MotionSensorProto;
 import ru.yandex.practicum.grpc.telemetry.collector.SensorEventProto;
 import ru.yandex.practicum.grpc.telemetry.collector.SwitchSensorProto;
 import ru.yandex.practicum.grpc.telemetry.collector.TemperatureSensorProto;
+import ru.yandex.practicum.hubrouter.config.SensorProps;
 
 
 @Component

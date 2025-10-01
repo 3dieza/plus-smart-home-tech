@@ -1,5 +1,6 @@
 package ru.yandex.practicum.serializationcore.kafka.avro;
 
+import java.util.Map;
 import org.apache.avro.Schema;
 import org.apache.avro.io.DatumReader;
 import org.apache.avro.io.Decoder;
@@ -9,12 +10,9 @@ import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
 
-import java.util.Map;
-
 public class BaseAvroDeserializer<T extends SpecificRecordBase> implements Deserializer<T> {
 
     private final DecoderFactory decoderFactory;
-    private final Schema schema;
     private final DatumReader<T> reader;
 
     public BaseAvroDeserializer(Schema schema) {
@@ -23,7 +21,6 @@ public class BaseAvroDeserializer<T extends SpecificRecordBase> implements Deser
 
     public BaseAvroDeserializer(DecoderFactory decoderFactory, Schema schema) {
         this.decoderFactory = decoderFactory;
-        this.schema = schema;
         this.reader = new SpecificDatumReader<>(schema);
     }
 

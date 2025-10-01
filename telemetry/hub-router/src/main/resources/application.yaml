@@ -1,14 +1,14 @@
 spring:
   application:
     name: hub-router
-  main:
-    banner-mode: "off"
 
 grpc:
+  server:
+    port: 59090         # Hub Router поднимает свой gRPC-сервер тут (его дернёт Analyzer)
   client:
-    collector:
-      address: static://127.0.0.1:59091
-      negotiationType: PLAINTEXT
+    collector:          # имя совпадает с @GrpcClient("collector")
+      address: 'static://127.0.0.1:59091'   # Collector слушает тут
+      negotiationType: plaintext
 
 sensor:
   hubId: "hub-001"
