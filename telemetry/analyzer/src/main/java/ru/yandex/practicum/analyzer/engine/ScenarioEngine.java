@@ -105,7 +105,7 @@ public class ScenarioEngine {
         return switch (op) {
             case "EQUALS" -> actual == expected;
             case "GREATER_THAN" -> actual > expected;
-            case "LESS_THAN" -> actual < expected;
+            case "LOWER_THAN" -> actual < expected;
             default -> false;
         };
     }
