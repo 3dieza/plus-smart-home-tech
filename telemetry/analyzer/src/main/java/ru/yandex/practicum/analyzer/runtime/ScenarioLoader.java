@@ -2,6 +2,7 @@ package ru.yandex.practicum.analyzer.runtime;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.analyzer.model.ScenarioEntity;
@@ -16,8 +17,7 @@ public class ScenarioLoader {
     @Transactional(readOnly = true)
     public List<ScenarioEntity> loadForHub(String hubId) {
         var scenarios = scenarioRepo.findAllWithConditionsByHubId(hubId);
-        // Инициализируем ленивые actions пока сессия открыта
-        scenarios.forEach(sc -> sc.getActions().size());
+        scenarios.forEach(sc -> Hibernate.initialize(sc.getActions()));
         return scenarios;
     }
 }

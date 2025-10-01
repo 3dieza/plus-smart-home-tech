@@ -12,7 +12,4 @@ public interface ScenarioRepository extends JpaRepository<ScenarioEntity, Long> 
 
     @EntityGraph(attributePaths = {"conditions"})
     List<ScenarioEntity> findAllWithConditionsByHubId(String hubId);
-
-    @EntityGraph(attributePaths = {"actions"})
-    List<ScenarioEntity> findAllWithActionsByHubId(String hubId);
 }
