@@ -1,5 +1,6 @@
 package ru.yandex.practicum.analyzer.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -7,15 +8,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.persistence.UniqueConstraint;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
-import static jakarta.persistence.CascadeType.ALL;
-import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Table(name = "scenario")
+@Table(name = "scenarios", uniqueConstraints =
+@UniqueConstraint(columnNames = {"hub_id", "name"}))
 @Getter
 @Setter
 public class ScenarioEntity {
@@ -23,16 +24,14 @@ public class ScenarioEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "hub_id")
     private String hubId;
-    @Column(nullable = false)
+    @Column(name = "name")
     private String name;
 
-    @OneToMany(mappedBy = "scenario", cascade = ALL, orphanRemoval = true, fetch = LAZY)
-    @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
-    private List<ConditionEntity> conditions = new ArrayList<>();
+    @OneToMany(mappedBy = "scenario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ScenarioConditionLink> conditionLinks = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "scenario", cascade = ALL, orphanRemoval = true, fetch = LAZY)
-    @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
-    private List<ActionEntity> actions = new ArrayList<>();
+    @OneToMany(mappedBy = "scenario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ScenarioActionLink> actionLinks = new LinkedHashSet<>();
 }

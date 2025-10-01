@@ -9,11 +9,18 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.analyzer.model.ActionEntity;
+import ru.yandex.practicum.analyzer.model.ActionType;
 import ru.yandex.practicum.analyzer.model.ConditionEntity;
-import ru.yandex.practicum.analyzer.model.DeviceEntity;
+import ru.yandex.practicum.analyzer.model.ConditionType;
+import ru.yandex.practicum.analyzer.model.Operation;
+import ru.yandex.practicum.analyzer.model.ScenarioActionLink;
+import ru.yandex.practicum.analyzer.model.ScenarioConditionLink;
 import ru.yandex.practicum.analyzer.model.ScenarioEntity;
-import ru.yandex.practicum.analyzer.repository.DeviceRepository;
+import ru.yandex.practicum.analyzer.model.SensorEntity;
+import ru.yandex.practicum.analyzer.repository.ActionRepository;
+import ru.yandex.practicum.analyzer.repository.ConditionRepository;
 import ru.yandex.practicum.analyzer.repository.ScenarioRepository;
+import ru.yandex.practicum.analyzer.repository.SensorRepository;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceAddedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceRemovedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
@@ -27,8 +34,11 @@ public class HubEventProcessor implements Runnable {
 
     @Qualifier("hubEventsConsumer")
     private final KafkaConsumer<String, HubEventAvro> consumer;
-    private final DeviceRepository deviceRepo;
+
+    private final SensorRepository sensorRepo;
     private final ScenarioRepository scenarioRepo;
+    private final ConditionRepository conditionRepo;
+    private final ActionRepository actionRepo;
 
     @Value("${kafka.topics.hubs}")
     private String topic;
@@ -45,14 +55,16 @@ public class HubEventProcessor implements Runnable {
     private void handle(HubEventAvro e) {
         String hubId = e.getHubId();
         Object payload = e.getPayload();
+
         if (payload instanceof DeviceAddedEventAvro da) {
-            var d = deviceRepo.findById(da.getId()).orElseGet(DeviceEntity::new);
+            var d = sensorRepo.findById(da.getId()).orElseGet(SensorEntity::new);
             d.setId(da.getId());
             d.setHubId(hubId);
-            d.setType(da.getType().name());
-            deviceRepo.save(d);
+            sensorRepo.save(d);
+
         } else if (payload instanceof DeviceRemovedEventAvro dr) {
-            deviceRepo.findByIdAndHubId(dr.getId(), hubId).ifPresent(deviceRepo::delete);
+            sensorRepo.findByIdAndHubId(dr.getId(), hubId).ifPresent(sensorRepo::delete);
+
         } else if (payload instanceof ScenarioAddedEventAvro sa) {
             var sc = scenarioRepo.findByHubIdAndName(hubId, sa.getName())
                     .orElseGet(() -> {
@@ -62,35 +74,55 @@ public class HubEventProcessor implements Runnable {
                         return s;
                     });
 
-            sc.getConditions().clear();
-            sc.getActions().clear();
+            // подчистим линк-коллекции
+            sc.getConditionLinks().clear();
+            sc.getActionLinks().clear();
 
-            // conditions
+            // --- conditions ---
             for (var c : sa.getConditions()) {
                 var ce = new ConditionEntity();
-                ce.setScenario(sc);
-                ce.setSensorId(c.getSensorId());
-                ce.setType(c.getType().name());
-                ce.setOperation(c.getOperation().name());
-
+                ce.setType(ConditionType.valueOf(c.getType().name()));        // <— enum, не String
+                ce.setOperation(Operation.valueOf(c.getOperation().name()));  // <— enum, не String
                 Object v = c.getValue();
-                if (v instanceof Boolean b) ce.setBoolValue(b);
-                else if (v instanceof Integer i) ce.setIntValue(i);
+                if (v instanceof Integer i) ce.setValue(i);
+                else if (v instanceof Boolean b) ce.setValue(b ? 1 : 0);
+                ce = conditionRepo.save(ce);
 
-                sc.getConditions().add(ce);
+                var sensor = sensorRepo.findByIdAndHubId(c.getSensorId(), hubId)
+                        .orElseGet(() -> {
+                            var s = new SensorEntity();
+                            s.setId(c.getSensorId());
+                            s.setHubId(hubId);
+                            return sensorRepo.save(s);
+                        });
+
+                var link = new ScenarioConditionLink();
+                link.setScenario(sc);
+                link.setSensor(sensor);
+                link.setCondition(ce);
+                sc.getConditionLinks().add(link);
             }
 
-            // actions
+// --- actions ---
             for (var a : sa.getActions()) {
                 var ae = new ActionEntity();
-                ae.setScenario(sc);
-                ae.setSensorId(a.getSensorId());
-                ae.setType(a.getType().name());
+                ae.setType(ActionType.valueOf(a.getType().name()));          // <— enum, не String
+                if (a.getValue() instanceof Integer i) ae.setValue(i);
+                ae = actionRepo.save(ae);
 
-                Object v = a.getValue();
-                if (v instanceof Integer i) ae.setValue(i);
+                var sensor = sensorRepo.findByIdAndHubId(a.getSensorId(), hubId)
+                        .orElseGet(() -> {
+                            var s = new SensorEntity();
+                            s.setId(a.getSensorId());
+                            s.setHubId(hubId);
+                            return sensorRepo.save(s);
+                        });
 
-                sc.getActions().add(ae);
+                var link = new ScenarioActionLink();
+                link.setScenario(sc);
+                link.setSensor(sensor);
+                link.setAction(ae);
+                sc.getActionLinks().add(link);
             }
 
             scenarioRepo.save(sc);

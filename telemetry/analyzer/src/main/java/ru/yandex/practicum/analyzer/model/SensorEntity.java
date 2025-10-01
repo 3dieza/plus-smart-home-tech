@@ -8,14 +8,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "device")
+@Table(name = "sensors")
 @Getter
 @Setter
-public class DeviceEntity {
+public class SensorEntity {
     @Id
+    @Column(name = "id")
     private String id;
-    @Column(nullable = false)
+    @Column(name = "hub_id")
     private String hubId;
-    @Column(nullable = false)
-    private String type; // MOTION_SENSOR
 }

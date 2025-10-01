@@ -7,6 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.analyzer.grpc.HubRouterClient;
 import ru.yandex.practicum.analyzer.model.ConditionEntity;
+import ru.yandex.practicum.analyzer.model.ConditionType;
+import ru.yandex.practicum.analyzer.model.Operation;
+import ru.yandex.practicum.analyzer.model.ScenarioActionLink;
 import ru.yandex.practicum.analyzer.model.ScenarioEntity;
 import ru.yandex.practicum.kafka.telemetry.event.ClimateSensorAvro;
 import ru.yandex.practicum.kafka.telemetry.event.LightSensorAvro;
@@ -20,75 +23,78 @@ import ru.yandex.practicum.kafka.telemetry.event.TemperatureSensorAvro;
 @Slf4j
 @RequiredArgsConstructor
 public class ScenarioEngine {
+
     private final HubRouterClient hubRouter;
 
-    public void evaluateAndExecute(
-            SensorsSnapshotAvro snapshot,
-            List<ScenarioEntity> scenarios) {
-
+    public void evaluateAndExecute(SensorsSnapshotAvro snapshot, List<ScenarioEntity> scenarios) {
         final String hubId = snapshot.getHubId();
-        final Map<String, SensorStateAvro> states =
-                snapshot.getSensorsState();
+        final Map<String, SensorStateAvro> states = snapshot.getSensorsState();
 
-        for (var sc : scenarios) {
-            boolean ok = sc.getConditions().stream().allMatch(c -> testCondition(c, states));
-            if (ok) {
-                for (var a : sc.getActions()) {
-                    log.info("Action -> hubId={}, scenario={}, deviceId={}, type={}, value={}",
-                            hubId, sc.getName(), a.getSensorId(), a.getType(), a.getValue());
-                    hubRouter.sendAction(hubId, sc.getName(), a.getSensorId(), a.getType(), a.getValue());
-                }
+        for (ScenarioEntity sc : scenarios) {
+            boolean ok = sc.getConditionLinks().stream()
+                    .allMatch(link -> testCondition(link.getSensor().getId(), link.getCondition(), states));
+
+            if (!ok) continue;
+
+            for (ScenarioActionLink al : sc.getActionLinks()) {
+                var a = al.getAction();
+                var sensorId = al.getSensor().getId();
+
+                log.info("Action -> hubId={}, scenario={}, deviceId={}, type={}, value={}",
+                        hubId, sc.getName(), sensorId, a.getType(), a.getValue());
+
+                hubRouter.sendAction(hubId, sc.getName(), sensorId, a.getType().name(), a.getValue());
             }
         }
     }
 
-    private boolean testCondition(
-            ConditionEntity c,
-            Map<String, SensorStateAvro> states) {
-
-        var st = states.get(c.getSensorId());
+    private boolean testCondition(String sensorId, ConditionEntity c, Map<String, SensorStateAvro> states) {
+        var st = states.get(sensorId);
         if (st == null || st.getData() == null) return false;
 
         Object payload = st.getData();
-        switch (c.getType()) {
-            case "MOTION" -> {
+        ConditionType type = c.getType();
+        Operation op = c.getOperation();
+
+        switch (type) {
+            case MOTION -> {
                 var p = (MotionSensorAvro) payload;
-                Boolean expected = c.getBoolValue();
+                Boolean expected = boolValue(c);
                 if (expected == null) return false;
-                return opBoolean(c.getOperation(), p.getMotion(), expected);
+                return opBoolean(op, p.getMotion(), expected);
             }
-            case "SWITCH" -> {
+            case SWITCH -> {
                 var p = (SwitchSensorAvro) payload;
-                Boolean expected = c.getBoolValue();
+                Boolean expected = boolValue(c);
                 if (expected == null) return false;
-                return opBoolean(c.getOperation(), p.getState(), expected);
+                return opBoolean(op, p.getState(), expected);
             }
-            case "LUMINOSITY" -> {
+            case LUMINOSITY -> {
                 var p = (LightSensorAvro) payload;
-                Integer expected = c.getIntValue();
+                Integer expected = c.getValue();
                 if (expected == null) return false;
-                return opInt(c.getOperation(), p.getLuminosity(), expected);
+                return opInt(op, p.getLuminosity(), expected);
             }
-            case "TEMPERATURE" -> {
-                Integer expected = c.getIntValue();
+            case TEMPERATURE -> {
+                Integer expected = c.getValue();
                 if (expected == null) return false;
                 if (payload instanceof TemperatureSensorAvro t)
-                    return opInt(c.getOperation(), t.getTemperatureC(), expected);
+                    return opInt(op, t.getTemperatureC(), expected);
                 if (payload instanceof ClimateSensorAvro cl)
-                    return opInt(c.getOperation(), cl.getTemperatureC(), expected);
+                    return opInt(op, cl.getTemperatureC(), expected);
                 return false;
             }
-            case "CO2LEVEL" -> {
+            case CO2LEVEL -> {
                 var cl = (ClimateSensorAvro) payload;
-                Integer expected = c.getIntValue();
+                Integer expected = c.getValue();
                 if (expected == null) return false;
-                return opInt(c.getOperation(), cl.getCo2Level(), expected);
+                return opInt(op, cl.getCo2Level(), expected);
             }
-            case "HUMIDITY" -> {
+            case HUMIDITY -> {
                 var cl = (ClimateSensorAvro) payload;
-                Integer expected = c.getIntValue();
+                Integer expected = c.getValue();
                 if (expected == null) return false;
-                return opInt(c.getOperation(), cl.getHumidity(), expected);
+                return opInt(op, cl.getHumidity(), expected);
             }
             default -> {
                 return false;
@@ -96,17 +102,22 @@ public class ScenarioEngine {
         }
     }
 
-    private boolean opBoolean(String op, boolean actual, boolean expected) {
-        if ("EQUALS".equals(op)) return actual == expected;
-        return false;
+    // В DDL только INTEGER value: для булевых — 0/1.
+    private Boolean boolValue(ConditionEntity c) {
+        Integer v = c.getValue();
+        if (v == null) return null;
+        return v != 0;
     }
 
-    private boolean opInt(String op, int actual, int expected) {
+    private boolean opBoolean(Operation op, boolean actual, boolean expected) {
+        return op == Operation.EQUALS && actual == expected;
+    }
+
+    private boolean opInt(Operation op, int actual, int expected) {
         return switch (op) {
-            case "EQUALS" -> actual == expected;
-            case "GREATER_THAN" -> actual > expected;
-            case "LOWER_THAN" -> actual < expected;
-            default -> false;
+            case EQUALS -> actual == expected;
+            case GREATER_THAN -> actual > expected;
+            case LOWER_THAN -> actual < expected;
         };
     }
 }

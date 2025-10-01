@@ -45,7 +45,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata1:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres -d smarthome" ]
       interval: 3s
@@ -53,4 +53,4 @@ services:
       retries: 20
 
 volumes:
-  pgdata:
+  pgdata1:
