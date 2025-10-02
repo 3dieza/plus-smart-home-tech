@@ -8,7 +8,6 @@ import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.grpc.telemetry.hubrouter.HubRouterControllerGrpc;
 import ru.yandex.practicum.grpc.telemetry.hubrouter.Message;
-
 @Slf4j
 @Service
 public class HubRouterClient {
@@ -17,10 +16,17 @@ public class HubRouterClient {
     private HubRouterControllerGrpc.HubRouterControllerBlockingStub stub;
 
     public void sendAction(String hubId, String scenarioName, String deviceId, String actionType, Integer value) {
+        // Дефолты: для булевых команд подставляем 1/0
+        Integer v = value;
+        if (v == null) {
+            if ("ACTIVATE".equals(actionType))      v = 1;
+            else if ("DEACTIVATE".equals(actionType)) v = 0;
+        }
+
         Message.DeviceActionProto.Builder action = Message.DeviceActionProto.newBuilder()
                 .setDeviceId(deviceId)
                 .setType(actionType);
-        if (value != null) action.setValue(value);
+        if (v != null) action.setValue(v);
 
         Message.DeviceActionRequest req = Message.DeviceActionRequest.newBuilder()
                 .setHubId(hubId)
@@ -42,7 +48,6 @@ public class HubRouterClient {
 
     private static Timestamp nowTs() {
         var i = java.time.Instant.now();
-        return Timestamp.newBuilder()
-                .setSeconds(i.getEpochSecond()).setNanos(i.getNano()).build();
+        return Timestamp.newBuilder().setSeconds(i.getEpochSecond()).setNanos(i.getNano()).build();
     }
 }

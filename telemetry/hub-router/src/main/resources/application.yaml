@@ -14,29 +14,29 @@ app:
     bootstrap-servers: "localhost:9092"
     topics:
       hubs: "telemetry.hubs.v1"
-sensor:
-  hubId: "hub-001"
-  motionSensors:
-    - id: "motion-1"
-      linkQuality: { minValue: 0,   maxValue: 100 }
-      voltage:     { minValue: 200, maxValue: 250 }
-    - id: "motion-2"
-      linkQuality: { minValue: 50,  maxValue: 60 }
-      voltage:     { minValue: 100, maxValue: 220 }
-  temperatureSensors:
-    - id: "temp-1"
-      temperature: { minValue: -20, maxValue: 30 }
-    - id: "temp-2"
-      temperature: { minValue: 0,   maxValue: 50 }
-  lightSensors:
-    - id: "light-1"
-      luminosity: { minValue: 100, maxValue: 800 }
-    - id: "light-2"
-      luminosity: { minValue: 200, maxValue: 1000 }
-  climateSensors:
-    - id: "climate-1"
-      temperature: { minValue: 10, maxValue: 25 }
-      humidity:    { minValue: 30, maxValue: 60 }
-      co2Level:    { minValue: 400, maxValue: 1000 }
-  switchSensors:
-    - id: "switch-1"
+#sensor:
+#  hubId: "hub-001"
+#  motionSensors:
+#    - id: "motion-1"
+#      linkQuality: { minValue: 0,   maxValue: 100 }
+#      voltage:     { minValue: 200, maxValue: 250 }
+#    - id: "motion-2"
+#      linkQuality: { minValue: 50,  maxValue: 60 }
+#      voltage:     { minValue: 100, maxValue: 220 }
+#  temperatureSensors:
+#    - id: "temp-1"
+#      temperature: { minValue: -20, maxValue: 30 }
+#    - id: "temp-2"
+#      temperature: { minValue: 0,   maxValue: 50 }
+#  lightSensors:
+#    - id: "light-1"
+#      luminosity: { minValue: 100, maxValue: 800 }
+#    - id: "light-2"
+#      luminosity: { minValue: 200, maxValue: 1000 }
+#  climateSensors:
+#    - id: "climate-1"
+#      temperature: { minValue: 10, maxValue: 25 }
+#      humidity:    { minValue: 30, maxValue: 60 }
+#      co2Level:    { minValue: 400, maxValue: 1000 }
+#  switchSensors:
+#    - id: "switch-1"

@@ -21,7 +21,7 @@ public class ConditionEntity {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type")
+    @Column(name = "type", nullable = false)
     private ConditionType type;
 
     @Enumerated(EnumType.STRING)

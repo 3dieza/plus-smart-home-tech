@@ -21,7 +21,7 @@ public class ActionEntity {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type")
+    @Column(name = "type", nullable = false)
     private ActionType type;
 
     @Column(name = "value")
