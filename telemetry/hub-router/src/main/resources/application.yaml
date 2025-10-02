@@ -9,7 +9,11 @@ grpc:
     collector:          # имя совпадает с @GrpcClient("collector")
       address: 'static://127.0.0.1:59091'   # Collector слушает тут
       negotiationType: plaintext
-
+app:
+  kafka:
+    bootstrap-servers: "localhost:9092"
+    topics:
+      hubs: "telemetry.hubs.v1"
 sensor:
   hubId: "hub-001"
   motionSensors:

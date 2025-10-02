@@ -81,7 +81,19 @@ public class ScenarioPersistenceService {
         for (var a : sa.getActions()) {
             var ae = new ActionEntity();
             ae.setType(ActionType.valueOf(a.getType().name()));
-            if (a.getValue() instanceof Integer i) ae.setValue(i);
+
+            // значение из события (union null|int)
+            Integer v = (a.getValue() instanceof Integer i) ? i : null;
+
+            // ДЕФОЛТЫ: если value не пришло — подставляем 1/0 для булевых экшенов
+            if (v == null) {
+                ActionType t = ae.getType();
+                if (t == ActionType.ACTIVATE)   v = 1;
+                else if (t == ActionType.DEACTIVATE) v = 0;
+                // для INVERSE/SET_VALUE оставляем null (или задайте свою политику)
+            }
+
+            ae.setValue(v);
             ae = actionRepo.save(ae);
 
             var sensor = sensorRepo.findByIdAndHubId(a.getSensorId(), hubId)

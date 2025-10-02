@@ -1,6 +1,5 @@
 package ru.yandex.practicum.hubrouter.grpc;
 
-
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +23,7 @@ public class HubRouterControllerService extends HubRouterControllerGrpc.HubRoute
         final String scenario = request.getScenarioName();
         final Message.DeviceActionProto action = request.getAction();
 
-        // Тут можно сделать реальный «роутинг» на устройства.
-        // Пока — просто логируем, что бы мы сделали.
+        // Пока просто логируем входящее действие
         log.info(
                 "HubRouter: received action -> hubId={}, scenario='{}', deviceId={}, type={}, value={}, ts={}",
                 hubId,
