@@ -85,18 +85,19 @@ public class ScenarioPersistenceService {
             var ae = new ActionEntity();
             ae.setType(ActionType.valueOf(a.getType().name()));
 
-            Integer v = (a.getValue() instanceof Integer i) ? i : null;
+            Integer rawValue = (a.getValue() instanceof Integer i) ? i : null;
 
-
+            // дефолты прямо тут
+            Integer v = rawValue;
             if (v == null) {
-                switch (ae.getType()) {
-                    case ACTIVATE    -> v = 1;
-                    case DEACTIVATE  -> v = 0;
-                    default          -> v = null; // SET_VALUE без дефолта
-                }
+                if (ae.getType() == ActionType.ACTIVATE)      v = 1;
+                else if (ae.getType() == ActionType.DEACTIVATE) v = 0;
             }
-            ae.setValue(v);
 
+            log.info("➡️ Action from SCENARIO_ADDED: sensorId={}, type={}, rawValue={}, resolvedValue={}",
+                    a.getSensorId(), ae.getType(), rawValue, v);
+
+            ae.setValue(v);
             ae = actionRepo.save(ae);
 
             var sensor = sensorRepo.findByIdAndHubId(a.getSensorId(), hubId)
