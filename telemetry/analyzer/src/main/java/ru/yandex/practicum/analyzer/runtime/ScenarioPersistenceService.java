@@ -84,12 +84,11 @@ public class ScenarioPersistenceService {
 
             Integer v = (a.getValue() instanceof Integer i) ? i : null;
 
-            // ДЕФОЛТЫ ПО ТЕСТАМ:
-            // ACTIVATE -> 0, DEACTIVATE -> 1
+
             if (v == null) {
                 switch (ae.getType()) {
-                    case ACTIVATE    -> v = 0;
-                    case DEACTIVATE  -> v = 1;
+                    case ACTIVATE    -> v = 1;
+                    case DEACTIVATE  -> v = 0;
                     default          -> v = null; // SET_VALUE без дефолта
                 }
             }
