@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.analyzer.grpc.HubRouterClient;
+import ru.yandex.practicum.analyzer.model.ActionType;
 import ru.yandex.practicum.analyzer.model.ConditionEntity;
 import ru.yandex.practicum.analyzer.model.ConditionType;
 import ru.yandex.practicum.analyzer.model.Operation;
@@ -27,6 +28,9 @@ public class ScenarioEngine {
     private final HubRouterClient hubRouter;
 
     public void evaluateAndExecute(SensorsSnapshotAvro snapshot, List<ScenarioEntity> scenarios) {
+        log.info("✅ === Incoming Snapshot from Kafka === hubId={}, sensorsState={}",
+                snapshot.getHubId(), snapshot.getSensorsState());
+
         final String hubId = snapshot.getHubId();
         final Map<String, SensorStateAvro> states = snapshot.getSensorsState();
 
@@ -43,10 +47,13 @@ public class ScenarioEngine {
                 Integer v = a.getValue();
                 if (v == null) {
                     switch (a.getType()) {
-                        case ACTIVATE    -> v = 0; // ожидаемое автотестами
-                        case DEACTIVATE  -> v = 1;
+                        case ACTIVATE    -> v = 1;
+                        case DEACTIVATE  -> v = 0;
                         default          -> v = null;
                     }
+                }
+                if (a.getType() == ActionType.SET_VALUE && v == null) {
+                    log.warn("❗SET_VALUE без value: scenario={}, deviceId={}", sc.getName(), sensorId);
                 }
 
                 log.info("Action -> hubId={}, scenario={}, deviceId={}, type={}, value={}",
