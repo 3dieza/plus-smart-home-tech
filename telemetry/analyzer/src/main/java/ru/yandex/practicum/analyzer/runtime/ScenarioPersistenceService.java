@@ -1,6 +1,7 @@
 package ru.yandex.practicum.analyzer.runtime;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.analyzer.model.ActionEntity;
@@ -20,6 +21,7 @@ import ru.yandex.practicum.analyzer.repository.ScenarioRepository;
 import ru.yandex.practicum.analyzer.repository.SensorRepository;
 import ru.yandex.practicum.kafka.telemetry.event.ScenarioAddedEventAvro;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ScenarioPersistenceService {
@@ -31,6 +33,7 @@ public class ScenarioPersistenceService {
 
     @Transactional
     public void upsertScenario(String hubId, ScenarioAddedEventAvro sa) {
+        log.info("⚙️ Обновление сценария: hubId={}, name={}", hubId, sa.getName());
         // найти или создать "скелет" сценария
         var sc = scenarioRepo.findByHubIdAndName(hubId, sa.getName())
                 .orElseGet(() -> {
