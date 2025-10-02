@@ -8,18 +8,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.analyzer.model.ActionEntity;
-import ru.yandex.practicum.analyzer.model.ActionType;
-import ru.yandex.practicum.analyzer.model.ConditionEntity;
-import ru.yandex.practicum.analyzer.model.ConditionType;
-import ru.yandex.practicum.analyzer.model.Operation;
-import ru.yandex.practicum.analyzer.model.ScenarioActionLink;
-import ru.yandex.practicum.analyzer.model.ScenarioConditionLink;
-import ru.yandex.practicum.analyzer.model.ScenarioEntity;
 import ru.yandex.practicum.analyzer.model.SensorEntity;
-import ru.yandex.practicum.analyzer.repository.ActionRepository;
-import ru.yandex.practicum.analyzer.repository.ConditionRepository;
-import ru.yandex.practicum.analyzer.repository.ScenarioRepository;
 import ru.yandex.practicum.analyzer.repository.SensorRepository;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceAddedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceRemovedEventAvro;
@@ -36,9 +25,7 @@ public class HubEventProcessor implements Runnable {
     private final KafkaConsumer<String, HubEventAvro> consumer;
 
     private final SensorRepository sensorRepo;
-    private final ScenarioRepository scenarioRepo;
-    private final ConditionRepository conditionRepo;
-    private final ActionRepository actionRepo;
+    private final ScenarioPersistenceService scenarioTx;
 
     @Value("${kafka.topics.hubs}")
     private String topic;
@@ -57,76 +44,27 @@ public class HubEventProcessor implements Runnable {
         Object payload = e.getPayload();
 
         if (payload instanceof DeviceAddedEventAvro da) {
-            var d = sensorRepo.findById(da.getId()).orElseGet(SensorEntity::new);
-            d.setId(da.getId());
-            d.setHubId(hubId);
-            sensorRepo.save(d);
+            sensorRepo.findById(da.getId()).ifPresentOrElse(
+                    s -> {
+                        s.setHubId(hubId);
+                        sensorRepo.save(s);
+                    },
+                    () -> {
+                        var s = new SensorEntity();
+                        s.setId(da.getId());
+                        s.setHubId(hubId);
+                        sensorRepo.save(s);
+                    }
+            );
 
         } else if (payload instanceof DeviceRemovedEventAvro dr) {
             sensorRepo.findByIdAndHubId(dr.getId(), hubId).ifPresent(sensorRepo::delete);
 
         } else if (payload instanceof ScenarioAddedEventAvro sa) {
-            var sc = scenarioRepo.findByHubIdAndName(hubId, sa.getName())
-                    .orElseGet(() -> {
-                        var s = new ScenarioEntity();
-                        s.setHubId(hubId);
-                        s.setName(sa.getName());
-                        return s;
-                    });
+            scenarioTx.upsertScenario(hubId, sa);
 
-            // подчистим линк-коллекции
-            sc.getConditionLinks().clear();
-            sc.getActionLinks().clear();
-
-            // --- conditions ---
-            for (var c : sa.getConditions()) {
-                var ce = new ConditionEntity();
-                ce.setType(ConditionType.valueOf(c.getType().name()));       // enum → enum
-                ce.setOperation(Operation.valueOf(c.getOperation().name())); // enum → enum
-                Object v = c.getValue();
-                if (v instanceof Integer i) ce.setValue(i);
-                else if (v instanceof Boolean b) ce.setValue(b ? 1 : 0);
-                ce = conditionRepo.save(ce);
-
-                var sensor = sensorRepo.findByIdAndHubId(c.getSensorId(), hubId)
-                        .orElseGet(() -> {
-                            var s = new SensorEntity();
-                            s.setId(c.getSensorId());
-                            s.setHubId(hubId);
-                            return sensorRepo.save(s);
-                        });
-
-                var link = new ScenarioConditionLink();
-                link.setScenario(sc);
-                link.setSensor(sensor);
-                link.setCondition(ce);
-                sc.getConditionLinks().add(link);
-            }
-
-// --- actions ---
-            for (var a : sa.getActions()) {
-                var ae = new ActionEntity();
-                ae.setType(ActionType.valueOf(a.getType().name())); // enum → enum
-                if (a.getValue() instanceof Integer i) ae.setValue(i);
-                ae = actionRepo.save(ae);
-
-                var sensor = sensorRepo.findByIdAndHubId(a.getSensorId(), hubId)
-                        .orElseGet(() -> {
-                            var s = new SensorEntity();
-                            s.setId(a.getSensorId());
-                            s.setHubId(hubId);
-                            return sensorRepo.save(s);
-                        });
-
-                var link = new ScenarioActionLink();
-                link.setScenario(sc);
-                link.setSensor(sensor);
-                link.setAction(ae);
-                sc.getActionLinks().add(link);
-            }
-            scenarioRepo.save(sc);
         } else if (payload instanceof ScenarioRemovedEventAvro sr) {
-            scenarioRepo.findByHubIdAndName(hubId, sr.getName()).ifPresent(scenarioRepo::delete);
+            // scenarioRepo.findByHubIdAndName(hubId, sr.getName()).ifPresent(scenarioRepo::delete);
         }
     }
 }

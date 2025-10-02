@@ -14,12 +14,7 @@ public class ScenarioLoader {
 
     @Transactional(readOnly = true)
     public List<ScenarioEntity> loadForHub(String hubId) {
-        var scenarios = scenarioRepo.findByHubId(hubId);
-        // прогреем коллекции, чтобы не было LazyInitializationException
-        scenarios.forEach(sc -> {
-            sc.getConditionLinks().size();
-            sc.getActionLinks().size();
-        });
-        return scenarios;
+        // грузим сразу весь граф: сценарий -> линки -> (sensor, condition/action)
+        return scenarioRepo.findByHubId(hubId);
     }
 }
