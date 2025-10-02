@@ -24,7 +24,7 @@ public class KafkaConfig {
         p.put(ConsumerConfig.GROUP_ID_CONFIG, group);
         p.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         p.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, SensorsSnapshotDeserializer.class.getName());
-        p.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        p.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         p.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
         return new KafkaConsumer<>(p);
     }
@@ -38,7 +38,7 @@ public class KafkaConfig {
         p.put(ConsumerConfig.GROUP_ID_CONFIG, group);
         p.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         p.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, HubEventDeserializer.class.getName());
-        p.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        p.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         p.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
         return new KafkaConsumer<>(p);
     }
