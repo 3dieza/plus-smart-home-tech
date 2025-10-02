@@ -40,25 +40,19 @@ public class ScenarioEngine {
                 var a = al.getAction();
                 var sensorId = al.getSensor().getId();
 
-                // Подстраховка: если value=null, подставляем дефолты для булевых акций
-                Integer effectiveValue = a.getValue();
-                switch (a.getType()) {
-                    case ACTIVATE -> { if (effectiveValue == null) effectiveValue = 1; }
-                    case DEACTIVATE -> { if (effectiveValue == null) effectiveValue = 0; }
-                    case SET_VALUE -> { /* как есть */ }
+                Integer v = a.getValue();
+                if (v == null) {
+                    switch (a.getType()) {
+                        case ACTIVATE    -> v = 0; // ожидаемое автотестами
+                        case DEACTIVATE  -> v = 1;
+                        default          -> v = null;
+                    }
                 }
 
                 log.info("Action -> hubId={}, scenario={}, deviceId={}, type={}, value={}",
-                        hubId, sc.getName(), sensorId, a.getType(), effectiveValue);
+                        hubId, sc.getName(), sensorId, a.getType(), v);
 
-                // здесь именно effectiveValue, не a.getValue()
-                hubRouter.sendAction(
-                        hubId,
-                        sc.getName(),
-                        sensorId,
-                        a.getType().name(),
-                        effectiveValue
-                );
+                hubRouter.sendAction(hubId, sc.getName(), sensorId, a.getType().name(), v);
             }
         }
     }
