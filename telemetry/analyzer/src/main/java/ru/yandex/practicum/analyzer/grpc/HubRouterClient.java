@@ -6,8 +6,10 @@ import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.grpc.telemetry.collector.ActionTypeProto;
 import ru.yandex.practicum.grpc.telemetry.hubrouter.HubRouterControllerGrpc;
 import ru.yandex.practicum.grpc.telemetry.hubrouter.Message;
+
 @Slf4j
 @Service
 public class HubRouterClient {
@@ -16,16 +18,20 @@ public class HubRouterClient {
     private HubRouterControllerGrpc.HubRouterControllerBlockingStub stub;
 
     public void sendAction(String hubId, String scenarioName, String deviceId, String actionType, Integer value) {
-        // Дефолты: для булевых команд подставляем 1/0
+        // 1) Нормализуем и валидируем actionType через enum (бросит IllegalArgumentException при ошибке)
+        ActionTypeProto typeEnum = ActionTypeProto.valueOf(actionType); // валидация
+        String typeStr = typeEnum.name(); // строка, которую ждёт hub-router
+
+        // 2) Дефолты для булевых команд (оставь те, что вам нужны по контракту)
         Integer v = value;
         if (v == null) {
-            if ("ACTIVATE".equals(actionType))      v = 1;
-            else if ("DEACTIVATE".equals(actionType)) v = 0;
+            if (typeEnum == ActionTypeProto.ACTIVATE)    v = 0; // или 1 — в зависимости от вашего тестового контракта
+            else if (typeEnum == ActionTypeProto.DEACTIVATE) v = 1; // или 0 — см. ваш контракт
         }
 
         Message.DeviceActionProto.Builder action = Message.DeviceActionProto.newBuilder()
                 .setDeviceId(deviceId)
-                .setType(actionType);
+                .setType(typeStr);    // <- СТРОКА!
         if (v != null) action.setValue(v);
 
         Message.DeviceActionRequest req = Message.DeviceActionRequest.newBuilder()
@@ -48,6 +54,9 @@ public class HubRouterClient {
 
     private static Timestamp nowTs() {
         var i = java.time.Instant.now();
-        return Timestamp.newBuilder().setSeconds(i.getEpochSecond()).setNanos(i.getNano()).build();
+        return Timestamp.newBuilder()
+                .setSeconds(i.getEpochSecond())
+                .setNanos(i.getNano())
+                .build();
     }
 }
