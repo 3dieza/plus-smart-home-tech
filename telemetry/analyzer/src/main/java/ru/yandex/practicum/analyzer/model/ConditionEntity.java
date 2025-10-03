@@ -10,6 +10,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import ru.yandex.practicum.analyzer.model.enums.ConditionType;
+import ru.yandex.practicum.analyzer.model.enums.Operation;
 
 @Entity
 @Table(name = "conditions")

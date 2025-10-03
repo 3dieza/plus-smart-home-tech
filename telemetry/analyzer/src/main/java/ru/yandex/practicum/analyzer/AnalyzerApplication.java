@@ -8,8 +8,8 @@ public class AnalyzerApplication {
     public static void main(String[] args) {
         var ctx = SpringApplication.run(AnalyzerApplication.class, args);
 
-        var hubProc = ctx.getBean(ru.yandex.practicum.analyzer.runtime.HubEventProcessor.class);
-        var snapshotProc = ctx.getBean(ru.yandex.practicum.analyzer.runtime.SnapshotProcessor.class);
+        var hubProc = ctx.getBean(ru.yandex.practicum.analyzer.service.HubEventProcessor.class);
+        var snapshotProc = ctx.getBean(ru.yandex.practicum.analyzer.service.SnapshotProcessor.class);
 
         Thread hubThread = new Thread(hubProc);
         hubThread.setName("HubEventHandlerThread");

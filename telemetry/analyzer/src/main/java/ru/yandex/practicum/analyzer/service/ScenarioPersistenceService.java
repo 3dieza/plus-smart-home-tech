@@ -1,14 +1,14 @@
-package ru.yandex.practicum.analyzer.runtime;
+package ru.yandex.practicum.analyzer.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.analyzer.model.ActionEntity;
-import ru.yandex.practicum.analyzer.model.ActionType;
+import ru.yandex.practicum.analyzer.model.enums.ActionType;
 import ru.yandex.practicum.analyzer.model.ConditionEntity;
-import ru.yandex.practicum.analyzer.model.ConditionType;
-import ru.yandex.practicum.analyzer.model.Operation;
+import ru.yandex.practicum.analyzer.model.enums.ConditionType;
+import ru.yandex.practicum.analyzer.model.enums.Operation;
 import ru.yandex.practicum.analyzer.model.ScenarioActionLink;
 import ru.yandex.practicum.analyzer.model.ScenarioActionLinkId;
 import ru.yandex.practicum.analyzer.model.ScenarioConditionLink;

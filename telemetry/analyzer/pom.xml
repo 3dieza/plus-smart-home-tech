@@ -54,7 +54,7 @@
             <artifactId>spring-kafka</artifactId>
         </dependency>
 
-        <!-- Avro runtime + наши схемы -->
+        <!-- Avro service + наши схемы -->
         <dependency>
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>

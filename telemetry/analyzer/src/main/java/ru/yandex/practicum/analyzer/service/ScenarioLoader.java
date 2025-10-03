@@ -1,4 +1,4 @@
-package ru.yandex.practicum.analyzer.runtime;
+package ru.yandex.practicum.analyzer.service;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;

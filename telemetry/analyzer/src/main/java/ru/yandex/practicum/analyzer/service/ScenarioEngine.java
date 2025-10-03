@@ -1,4 +1,4 @@
-package ru.yandex.practicum.analyzer.engine;
+package ru.yandex.practicum.analyzer.service;
 
 import java.util.List;
 import java.util.Map;
@@ -6,10 +6,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.analyzer.grpc.HubRouterClient;
-import ru.yandex.practicum.analyzer.model.ActionType;
+import ru.yandex.practicum.analyzer.model.enums.ActionType;
 import ru.yandex.practicum.analyzer.model.ConditionEntity;
-import ru.yandex.practicum.analyzer.model.ConditionType;
-import ru.yandex.practicum.analyzer.model.Operation;
+import ru.yandex.practicum.analyzer.model.enums.ConditionType;
+import ru.yandex.practicum.analyzer.model.enums.Operation;
 import ru.yandex.practicum.analyzer.model.ScenarioActionLink;
 import ru.yandex.practicum.analyzer.model.ScenarioEntity;
 import ru.yandex.practicum.kafka.telemetry.event.ClimateSensorAvro;

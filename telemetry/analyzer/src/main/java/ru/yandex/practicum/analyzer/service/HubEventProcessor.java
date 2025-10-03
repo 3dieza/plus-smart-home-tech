@@ -1,4 +1,4 @@
-package ru.yandex.practicum.analyzer.runtime;
+package ru.yandex.practicum.analyzer.service;
 
 import java.time.Duration;
 import java.util.List;

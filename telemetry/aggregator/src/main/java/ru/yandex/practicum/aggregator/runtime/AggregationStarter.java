@@ -104,7 +104,7 @@ public class AggregationStarter {
         } catch (WakeupException ignored) {
             // shutdown вызвал consumer.wakeup()
         } catch (Exception e) {
-            log.error("Aggregator runtime error", e);
+            log.error("Aggregator service error", e);
         } finally {
             // Гарантируем flush продюсера и синхронный коммит оффсетов
             try {
