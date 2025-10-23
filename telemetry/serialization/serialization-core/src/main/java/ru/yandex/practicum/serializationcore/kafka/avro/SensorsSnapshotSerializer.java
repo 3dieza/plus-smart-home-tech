@@ -1,9 +1,0 @@
-package ru.yandex.practicum.serializationcore.kafka.avro;
-
-import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
-
-public class SensorsSnapshotSerializer extends BaseAvroSerializer<SensorsSnapshotAvro> {
-    public SensorsSnapshotSerializer() {
-        super(SensorsSnapshotAvro.class);
-    }
-}
