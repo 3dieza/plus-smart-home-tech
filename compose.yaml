@@ -1,3 +1,5 @@
+name: smart-hub
+
 services:
   kafka:
     image: confluentinc/confluent-local:7.4.3
