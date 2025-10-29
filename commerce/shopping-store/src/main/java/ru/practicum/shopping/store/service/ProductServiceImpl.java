@@ -24,7 +24,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Transactional
 public class ProductServiceImpl implements ProductService {
     StoreRepository storeRepository;
     ProductMapper productMapper;
@@ -38,6 +37,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public ProductDto createProduct(@Valid ProductDto newProductDto) {
         Product product = productMapper.toEntity(newProductDto);
 
@@ -45,6 +45,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public ProductDto updateProduct(@Valid ProductDto updateProductDto) {
         Product product = validateProductExist(updateProductDto.getProductId());
         productMapper.updateFromDto(updateProductDto, product);
@@ -53,6 +54,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public boolean deleteProduct(UUID productId) {
         Product product = validateProductExist(productId);
         product.setProductState(ProductState.DEACTIVATE);
@@ -61,6 +63,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public boolean updateQuantityState(UUID productId, QuantityState quantityState) {
         if (productId == null) {
             throw new IllegalArgumentException("productId не может быть null");

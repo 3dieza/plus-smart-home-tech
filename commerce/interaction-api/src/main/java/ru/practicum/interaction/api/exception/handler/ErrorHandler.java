@@ -12,117 +12,57 @@ import ru.practicum.interaction.api.exception.NotFoundException;
 import ru.practicum.interaction.api.exception.ProductNotFoundException;
 import ru.practicum.interaction.api.exception.SpecifiedProductAlreadyInWarehouseException;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Slf4j
 @RestControllerAdvice
 public class ErrorHandler {
 
     @ExceptionHandler(ProductNotFoundException.class)
     public ResponseEntity<ApiError> handleProductNotFoundException(Exception ex) {
-        log.warn("Выброшено исключение ProductNotFoundException");
-
-        ApiError response = createResponse(ex, "Товар не найден. Пожалуйста, проверьте запрос.");
-
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        log.error("ProductNotFoundException: {}", ex.getMessage(), ex);
+        return buildResponse("Товар не найден. Пожалуйста, проверьте запрос.", HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(NotAuthorizedUserException.class)
     public ResponseEntity<ApiError> handleNotAuthorizedUserException(Exception ex) {
-        log.warn("Выброшено исключение NotAuthorizedUserException");
-
-        ApiError response = createResponse(ex, "Пользователь не указан. Пожалуйста, проверьте запрос.");
-
-        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        log.error("NotAuthorizedUserException: {}", ex.getMessage(), ex);
+        return buildResponse("Пользователь не указан. Пожалуйста, проверьте запрос.", HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ApiError> handleNotFoundException(Exception ex) {
-        log.warn("Выброшено исключение NotFoundException");
-
-        ApiError response = createResponse(ex, "Ресурс не найден.");
-
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        log.error("NotFoundException: {}", ex.getMessage(), ex);
+        return buildResponse("Ресурс не найден.", HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(SpecifiedProductAlreadyInWarehouseException.class)
     public ResponseEntity<ApiError> handleSpecifiedProductAlreadyInWarehouseException(Exception ex) {
-        log.warn("Выброшено исключение SpecifiedProductAlreadyInWarehouseException");
-
-        ApiError response = createResponse(ex, "Ошибка, товар с таким описанием уже зарегистрирован на складе");
-
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        log.error("SpecifiedProductAlreadyInWarehouseException: {}", ex.getMessage(), ex);
+        return buildResponse("Товар с таким описанием уже зарегистрирован на складе", HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(NoSpecifiedProductInWarehouseException.class)
     public ResponseEntity<ApiError> handleNoSpecifiedProductInWarehouseException(Exception ex) {
-        log.warn("Выброшено исключение NoSpecifiedProductInWarehouseException");
-
-        ApiError response = createResponse(ex, "Нет информации о товаре на складе");
-
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        log.error("NoSpecifiedProductInWarehouseException: {}", ex.getMessage(), ex);
+        return buildResponse("Нет информации о товаре на складе", HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ApiError> handleBadRequestException(Exception ex) {
-        log.warn("Выброшено исключение BadRequestException");
-
-        ApiError response = createResponse(ex, "Некорректный запрос.");
-
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        log.error("BadRequestException: {}", ex.getMessage(), ex);
+        return buildResponse("Некорректный запрос.", HttpStatus.BAD_REQUEST);
     }
 
-    private ApiError createResponse(Exception ex, String message) {
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiError> handleAll(Exception ex) {
+        log.error("Необработанное исключение: {}", ex.getMessage(), ex);
+        return buildResponse("Внутренняя ошибка сервера.", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private ResponseEntity<ApiError> buildResponse(String userMessage, HttpStatus status) {
         ApiError response = ApiError.builder()
-                .message(ex.getMessage())
-                .localizedMessage(ex.getLocalizedMessage())
-                .userMessage(message)
-                .httpStatus(HttpStatus.NOT_FOUND.toString())
-                .stackTrace(convertStackTrace(ex.getStackTrace()))
+                .userMessage(userMessage)
+                .httpStatus(status.toString())
                 .build();
-
-        if (ex.getCause() != null) {
-            Throwable cause = ex.getCause();
-            ApiError.ReasonError reasonError = new ApiError.ReasonError(
-                    convertStackTrace(cause.getStackTrace()),
-                    cause.getMessage(),
-                    cause.getLocalizedMessage()
-            );
-            response.setCause(reasonError);
-        }
-
-        if (ex.getSuppressed() != null && ex.getSuppressed().length > 0) {
-            List<ApiError.ReasonError> suppressedList = Arrays.stream(ex.getSuppressed())
-                    .map(sup -> new ApiError.ReasonError(
-                            convertStackTrace(sup.getStackTrace()),
-                            sup.getMessage(),
-                            sup.getLocalizedMessage()
-                    ))
-                    .collect(Collectors.toList());
-            response.setSuppressed(suppressedList);
-        }
-
-        return response;
-    }
-
-    private List<ApiError.StackTraceItem> convertStackTrace(StackTraceElement[] elements) {
-        if (elements == null || elements.length == 0) {
-            return List.of();
-        }
-
-        return Arrays.stream(elements)
-                .map(el -> new ApiError.StackTraceItem(
-                        el.getClassLoaderName(),
-                        el.getModuleName(),
-                        el.getModuleVersion(),
-                        el.getMethodName(),
-                        el.getFileName(),
-                        el.getLineNumber(),
-                        el.getClassName(),
-                        el.isNativeMethod()
-                ))
-                .collect(Collectors.toList());
+        return new ResponseEntity<>(response, status);
     }
 }

@@ -27,7 +27,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Transactional
 public class WarehouseServiceImpl implements WarehouseService {
     WarehouseMapper warehouseMapper;
     ProductStorageRepository productStorageRepository;
@@ -39,6 +38,7 @@ public class WarehouseServiceImpl implements WarehouseService {
             ADDRESSES[Random.from(new SecureRandom()).nextInt(0, 1)];
 
     @Override
+    @Transactional
     public void addNewProductToWarehouse(NewProductInWarehouseRequestDto newProductInWarehouseRequestDto) {
         UUID productId = newProductInWarehouseRequestDto.getProductId();
         if (productStorageRepository.existsById(productId)) {
@@ -100,6 +100,7 @@ public class WarehouseServiceImpl implements WarehouseService {
     }
 
     @Override
+    @Transactional
     public void updateProductToWarehouse(AddProductToWarehouseRequestDto addProductToWarehouseRequestDto) {
         UUID productId = addProductToWarehouseRequestDto.getProductId();
 

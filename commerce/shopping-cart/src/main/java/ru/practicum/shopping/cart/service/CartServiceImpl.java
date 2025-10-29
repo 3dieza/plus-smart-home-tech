@@ -27,7 +27,6 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Transactional
 @Slf4j
 public class CartServiceImpl implements CartService {
     CartRepository cartRepository;
@@ -53,6 +52,7 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    @Transactional
     public ShoppingCartDto addProduct(String username, Map<UUID, Long> products) {
         checkUsername(username);
         log.info("Запрос на добавление товаров в корзину пользователя: {}. Количество товаров: {}", username, products.size());
@@ -100,6 +100,7 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    @Transactional
     public void deactivateCart(String username) {
         checkUsername(username);
         log.info("Запрос на деактивацию корзины для пользователя: {}", username);
@@ -117,6 +118,7 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    @Transactional
     public ShoppingCartDto deleteProduct(String username, Set<UUID> request) {
         checkUsername(username);
 
@@ -136,6 +138,7 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    @Transactional
     public ShoppingCartDto updateProductQuantity(String username, ChangeProductQuantityRequestDto requestDto) {
         checkUsername(username);
 
