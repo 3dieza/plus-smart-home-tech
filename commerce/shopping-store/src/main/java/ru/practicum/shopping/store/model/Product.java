@@ -1,4 +1,4 @@
-package ru.practicum.shopping.store.module;
+package ru.practicum.shopping.store.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

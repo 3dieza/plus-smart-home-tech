@@ -1,16 +1,16 @@
 package ru.practicum.interaction.api.dto.warehouse;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-
-import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -28,6 +28,6 @@ public class NewProductInWarehouseRequestDto {
     DimensionDto dimensionDto;
 
     @NotNull(message = "Вес товара обязателен")
-    @Min(value = 1, message = "Минимальное значение 1")
-    Double weight;
+    @DecimalMin(value = "1.000", message = "Значение должно быть не менее 1")
+    BigDecimal weight;
 }
