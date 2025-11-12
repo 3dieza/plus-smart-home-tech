@@ -7,7 +7,7 @@ import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import ru.practicum.interaction.api.dto.store.ProductDto;
-import ru.practicum.shopping.store.module.Product;
+import ru.practicum.shopping.store.model.Product;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,4 +28,6 @@ public interface ProductMapper {
 
     @Mapping(target = "productId", ignore = true)
     void updateFromDto(ProductDto dto, @MappingTarget Product entity);
+
+    List<ProductDto> toDtoList(List<Product> entities);
 }

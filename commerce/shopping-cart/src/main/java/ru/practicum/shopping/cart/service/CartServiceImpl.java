@@ -1,32 +1,36 @@
 package ru.practicum.shopping.cart.service;
 
 import feign.FeignException;
+import jakarta.validation.Valid;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import ru.practicum.interaction.api.dto.cart.ChangeProductQuantityRequestDto;
 import ru.practicum.interaction.api.dto.cart.ShoppingCartDto;
 import ru.practicum.interaction.api.dto.warehouse.BookedProductsDto;
 import ru.practicum.interaction.api.enums.cart.CartState;
 import ru.practicum.interaction.api.exception.BadRequestException;
+import ru.practicum.interaction.api.exception.NoCartFoundException;
 import ru.practicum.interaction.api.exception.NotAuthorizedUserException;
 import ru.practicum.interaction.api.exception.NotFoundException;
 import ru.practicum.shopping.cart.feign.client.WarehouseClient;
 import ru.practicum.shopping.cart.mapper.CartMapper;
-import ru.practicum.shopping.cart.module.Cart;
+import ru.practicum.shopping.cart.model.Cart;
 import ru.practicum.shopping.cart.repository.CartRepository;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Transactional
+@Validated
 @Slf4j
 public class CartServiceImpl implements CartService {
     CartRepository cartRepository;
@@ -52,7 +56,6 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    @Transactional
     public ShoppingCartDto addProduct(String username, Map<UUID, Long> products) {
         checkUsername(username);
         log.info("Запрос на добавление товаров в корзину пользователя: {}. Количество товаров: {}", username, products.size());
@@ -100,7 +103,6 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    @Transactional
     public void deactivateCart(String username) {
         checkUsername(username);
         log.info("Запрос на деактивацию корзины для пользователя: {}", username);
@@ -118,7 +120,6 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    @Transactional
     public ShoppingCartDto deleteProduct(String username, Set<UUID> request) {
         checkUsername(username);
 
@@ -128,7 +129,7 @@ public class CartServiceImpl implements CartService {
 
         Cart cart = cartRepository.findByUsernameAndStatus(username, CartState.ACTIVE)
                 .orElseThrow(() -> new NotFoundException(String.format("Активной корзины покупок " +
-                                                                       "для пользователя %s не найдено", username)));
+                        "для пользователя %s не найдено", username)));
 
         if (cart.getProducts() != null) {
             cart.getProducts().keySet().removeAll(request);
@@ -138,15 +139,14 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    @Transactional
-    public ShoppingCartDto updateProductQuantity(String username, ChangeProductQuantityRequestDto requestDto) {
+    public ShoppingCartDto updateProductQuantity(String username, @Valid ChangeProductQuantityRequestDto requestDto) {
         checkUsername(username);
 
         if (requestDto == null) throw new BadRequestException("Запрос на обновление не может быть null");
 
         Cart cart = cartRepository.findByUsernameAndStatus(username, CartState.ACTIVE)
                 .orElseThrow(() -> new NotFoundException(String.format("Активной корзины покупок " +
-                                                                       "для пользователя %s не найдено", username)));
+                        "для пользователя %s не найдено", username)));
 
         UUID productId = requestDto.getProductId();
         Long newQuantity = requestDto.getNewQuantity();
@@ -171,8 +171,15 @@ public class CartServiceImpl implements CartService {
         return cartMapper.toDto(cartRepository.save(cart));
     }
 
+    @Override
+    public String getUsernameById(UUID cartId) {
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new NoCartFoundException("Корзина с таким ID не существует: {}" + cartId));
+        return cart.getUsername();
+    }
+
     private void checkUsername(String username) {
-        if (username == null || username.isEmpty()) {
+        if (username == null || username.isBlank()) {
             throw new NotAuthorizedUserException("Имя пользователя не должно быть пустым.");
         }
     }

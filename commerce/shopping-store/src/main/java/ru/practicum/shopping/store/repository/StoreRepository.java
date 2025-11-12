@@ -4,7 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import ru.practicum.interaction.api.enums.store.ProductCategory;
-import ru.practicum.shopping.store.module.Product;
+import ru.practicum.shopping.store.model.Product;
 
 import java.util.UUID;
 

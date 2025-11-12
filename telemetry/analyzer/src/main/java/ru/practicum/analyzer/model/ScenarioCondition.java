@@ -29,19 +29,19 @@ public class ScenarioCondition {
 
     @ManyToOne
     @MapsId("scenarioId")
-    @JoinColumn(name = "scenario_id")
+    @JoinColumn(name = "scenario_id", nullable = false)
     @NotNull
     Scenario scenario;
 
     @ManyToOne
     @MapsId("sensorId")
-    @JoinColumn(name = "sensor_id")
+    @JoinColumn(name = "sensor_id", nullable = false)
     @NotNull
     Sensor sensor;
 
     @ManyToOne
     @MapsId("conditionId")
-    @JoinColumn(name = "condition_id")
+    @JoinColumn(name = "condition_id", nullable = false)
     @NotNull
     Condition condition;
 }

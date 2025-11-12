@@ -10,7 +10,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-
 import ru.practicum.interaction.api.enums.store.ProductCategory;
 import ru.practicum.interaction.api.enums.store.ProductState;
 import ru.practicum.interaction.api.enums.store.QuantityState;

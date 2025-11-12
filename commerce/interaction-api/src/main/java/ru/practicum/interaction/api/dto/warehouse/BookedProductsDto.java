@@ -1,6 +1,8 @@
 package ru.practicum.interaction.api.dto.warehouse;
 
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,10 +17,12 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BookedProductsDto {
     @NotNull(message = "Общий вес доставки обязателен")
-    Double deliveryWeight;
+    @DecimalMin(value = "0.000")
+    BigDecimal deliveryWeight;
 
     @NotNull(message = "Общие объём доставки обязателен")
-    Double deliveryVolume;
+    @DecimalMin(value = "0.000")
+    BigDecimal deliveryVolume;
 
     @NotNull(message = "Наличие хрупких вещей в доставке обязательно к указанию")
     Boolean fragile;

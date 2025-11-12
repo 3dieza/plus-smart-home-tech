@@ -1,8 +1,9 @@
 package ru.practicum.interaction.api.dto.warehouse;
 
 import jakarta.persistence.Embeddable;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,14 +19,14 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class DimensionDto {
     @NotNull(message = "Необходимо указать ширину")
-    @Min(value = 1, message = "минимальное значение 1")
-    Double width;
+    @DecimalMin(value = "1.000", message = "Значение должно быть не менее 1")
+    BigDecimal width;
 
     @NotNull(message = "Необходимо указать высоту")
-    @Min(value = 1, message = "минимальное значение 1")
-    Double height;
+    @DecimalMin(value = "1.000", message = "Значение должно быть не менее 1")
+    BigDecimal height;
 
     @NotNull(message = "Необходимо указать глубину")
-    @Min(value = 1, message = "минимальное значение 1")
-    Double depth;
+    @DecimalMin(value = "1.000", message = "Значение должно быть не менее 1")
+    BigDecimal depth;
 }

@@ -29,19 +29,19 @@ public class ScenarioAction {
 
     @ManyToOne
     @MapsId("scenarioId")
-    @JoinColumn(name = "scenario_id")
+    @JoinColumn(name = "scenario_id", nullable = false)
     @NotNull
     Scenario scenario;
 
     @ManyToOne
     @MapsId("sensorId")
-    @JoinColumn(name = "sensor_id")
+    @JoinColumn(name = "sensor_id", nullable = false)
     @NotNull
     Sensor sensor;
 
     @ManyToOne
     @MapsId("actionId")
-    @JoinColumn(name = "action_id")
+    @JoinColumn(name = "action_id", nullable = false)
     @NotNull
     Action action;
 }

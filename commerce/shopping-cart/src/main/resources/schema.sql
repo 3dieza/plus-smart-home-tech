@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS cart_product CASCADE;
 
 CREATE TABLE IF NOT EXISTS cart (
     shopping_cart_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    username varchar(255) NOT NULL,
+    username varchar(50) NOT NULL,
     status varchar(20) NOT NULL
 );
 
