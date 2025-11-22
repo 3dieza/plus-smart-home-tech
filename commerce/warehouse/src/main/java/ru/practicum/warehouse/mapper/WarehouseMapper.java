@@ -4,7 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 import ru.practicum.interaction.api.dto.warehouse.NewProductInWarehouseRequestDto;
-import ru.practicum.warehouse.module.ProductStorage;
+import ru.practicum.warehouse.model.ProductStorage;
 
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.ERROR)

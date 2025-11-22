@@ -9,21 +9,26 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import ru.practicum.interaction.api.dto.store.ProductDto;
 import ru.practicum.interaction.api.enums.store.ProductCategory;
 import ru.practicum.interaction.api.enums.store.ProductState;
 import ru.practicum.interaction.api.enums.store.QuantityState;
 import ru.practicum.interaction.api.exception.ProductNotFoundException;
 import ru.practicum.shopping.store.mapper.ProductMapper;
-import ru.practicum.shopping.store.module.Product;
+import ru.practicum.shopping.store.model.Product;
 import ru.practicum.shopping.store.repository.StoreRepository;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Transactional
+@Validated
 public class ProductServiceImpl implements ProductService {
     StoreRepository storeRepository;
     ProductMapper productMapper;
@@ -37,7 +42,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional
     public ProductDto createProduct(@Valid ProductDto newProductDto) {
         Product product = productMapper.toEntity(newProductDto);
 
@@ -45,7 +49,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional
     public ProductDto updateProduct(@Valid ProductDto updateProductDto) {
         Product product = validateProductExist(updateProductDto.getProductId());
         productMapper.updateFromDto(updateProductDto, product);
@@ -54,7 +57,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional
     public boolean deleteProduct(UUID productId) {
         Product product = validateProductExist(productId);
         product.setProductState(ProductState.DEACTIVATE);
@@ -63,7 +65,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional
     public boolean updateQuantityState(UUID productId, QuantityState quantityState) {
         if (productId == null) {
             throw new IllegalArgumentException("productId не может быть null");
@@ -83,6 +84,17 @@ public class ProductServiceImpl implements ProductService {
     public ProductDto getProductById(UUID productId) {
         Product product = validateProductExist(productId);
         return productMapper.toDto(product);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductDto> getProductsByIds(List<UUID> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Product> products = storeRepository.findAllById(productIds);
+
+        return productMapper.toDtoList(products);
     }
 
     private Product validateProductExist(UUID productId) {
